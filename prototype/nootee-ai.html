@@ -1,0 +1,1626 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<title>AI Notes — Thư viện Sổ Tay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,500&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Heritage Type Palette */
+    --bg: #111512;
+    --surface: #1C241E;
+    --surface-hover: #263028;
+    --ink: #F0EAD6;
+    --muted: #8E9B90;
+    --border: rgba(240, 234, 214, 0.08);
+    --accent: #D4AF37;
+    --accent-light: #F3E5AB;
+    --accent-dark: #996515;
+    --accent-ink: #111512;
+    --mouse-x: 50vw;
+    --mouse-y: 50vh;
+
+    --paper: #FBF7EE;
+    --paper-line: #E4D9BC;
+    --paper-line-grid: #E9DFC5;
+    --paper-line-dots: #CBBE96;
+    --ink-on-paper: #2A2420;
+    --muted-on-paper: #6B5D4E;
+
+    --cloth-teal: #1F5C52;
+    --cloth-navy: #253C5E;
+    --cloth-burgundy: #6B2A32;
+    --cloth-ochre: #B8842E;
+    --cloth-forest: #35502E;
+    --cloth-umber: #5B4A3C;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow: 0 10px 24px -8px rgba(0,0,0,0.5);
+    --shadow-lg: 0 24px 48px -16px rgba(0,0,0,0.65);
+    --page-glow: 0 0 0 1px rgba(0,0,0,0.3), 0 40px 70px -24px rgba(0,0,0,0.75), 0 0 160px 24px rgba(92,141,109,0.14);
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --cover-ratio: 1.414; /* A4 Ratio */
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "Work Sans", ui-sans-serif, sans-serif;
+    font-size: 15px; line-height: 1.6;
+  }
+  h1, h2, h3 { font-family: "Playfair Display", Georgia, serif; margin: 0; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+  /* App Container */
+  .app { width: 100vw; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+  /* Utilities */
+  .hidden { display: none !important; }
+  .btn {
+    font-family: "Work Sans", sans-serif; font-size: 0.92rem; font-weight: 500;
+    padding: 9px 18px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;
+  }
+  .btn:hover { background: var(--surface-hover); }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent-light), var(--accent)); color: var(--accent-ink); border: none; font-weight: 600; box-shadow: 0 10px 20px -8px rgba(92,141,109,0.5); }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-quiet { border-color: transparent; background: transparent; color: var(--muted); }
+  .btn-quiet:hover { color: var(--ink); background: var(--surface-hover); }
+  .btn-icon { padding: 8px; border-radius: 50%; border: none; background: transparent; cursor: pointer; color: var(--ink); }
+  .btn-icon:hover { background: rgba(255,255,255,0.08); }
+
+  /* ---- Ambient lamp glow ---- */
+  .lamp-ambient {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(640px 400px at 50% -6%, rgba(242,197,114,0.09), transparent 70%);
+  }
+
+  /* ---- View: Dashboard ---- */
+  .view-dashboard { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 0; position: relative; z-index: 1; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 40px;
+    background: #090B0A;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    z-index: 50;
+    position: sticky;
+    top: 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-icon { display: flex; align-items: center; justify-content: center; color: var(--accent); }
+  .brand-name { font-family: "Playfair Display", "Source Serif 4", serif; font-style: italic; font-weight: 700; font-size: 2rem; color: var(--accent-light); letter-spacing: 1px; }
+  .brand-sub { font-family: "Playfair Display", serif; font-size: 15px; font-style: italic; letter-spacing: 0.05em; color: var(--muted); margin: 4px 0 0 16px; }
+
+  /* Spotlight Grid Hover Effect */
+  .cursor-glow {
+    position: fixed;
+    top: var(--mouse-y);
+    left: var(--mouse-x);
+    width: 600px;
+    height: 600px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.06) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .retro-grid-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    -webkit-mask-image: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), black 5%, transparent 70%);
+    mask-image: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), black 5%, transparent 70%);
+  }
+  .retro-grid {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    height: 100%;
+    gap: 15px;
+    padding: 20px;
+    justify-content: center;
+    align-content: center;
+  }
+  .retro-grid .letter {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    color: rgba(212, 175, 55, 0.15);
+    width: 25px;
+    height: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+    user-select: none;
+    transition: color 0.7s ease, transform 0.7s ease, text-shadow 0.7s ease;
+  }
+  .retro-grid .letter:hover {
+    color: rgba(255, 230, 140, 1);
+    text-shadow: 0 0 12px rgba(212, 175, 55, 0.9), 0 0 25px rgba(212, 175, 55, 0.5);
+    transform: scale(1.6) translateY(-2px);
+    transition: 0s;
+    z-index: 10;
+  }
+
+  .notebook-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 36px;
+    padding: 40px;
+  }
+
+  /* Notebook Card */
+  .notebook-card {
+    position: relative; display: flex; flex-direction: column; gap: 14px;
+    cursor: pointer; transition: transform 0.2s ease;
+  }
+  .notebook-card:hover { transform: translateY(-4px); }
+  .notebook-cover {
+    width: 100%; aspect-ratio: 1 / var(--cover-ratio);
+    border-radius: 3px 12px 12px 3px;
+    box-shadow: 0 26px 40px -20px rgba(0,0,0,0.7);
+    position: relative; overflow: hidden;
+    display: flex; align-items: flex-end;
+  }
+  .notebook-cover::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 3px);
+  }
+  .notebook-cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(118deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 32%, rgba(0,0,0,0.16) 100%);
+  }
+  .cover-spine { position: absolute; left: 0; top: 0; bottom: 0; width: 12px; z-index: 2; background: linear-gradient(90deg, rgba(0,0,0,0.4), rgba(0,0,0,0)); }
+  .cover-corner {
+    position: absolute; top: 0; right: 0; width: 30px; height: 30px; z-index: 2;
+    background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 45%, var(--accent-dark) 100%);
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+    box-shadow: -1px 1px 3px rgba(0,0,0,0.4);
+  }
+  .cover-title {
+    position: relative; z-index: 2; padding: 0 22px 26px 22px;
+    font-family: "Playfair Display", serif; font-weight: 600; font-size: 1.15rem; line-height: 1.3;
+    color: rgba(255,255,255,0.88);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.15), 0 -1px 1px rgba(0,0,0,0.45);
+  }
+  .cover-teal { background: var(--cloth-teal); }
+  .cover-navy { background: var(--cloth-navy); }
+  .cover-burgundy { background: var(--cloth-burgundy); }
+  .cover-ochre { background: var(--cloth-ochre); }
+  .cover-forest { background: var(--cloth-forest); }
+  .cover-umber { background: var(--cloth-umber); }
+
+  .notebook-title { font-weight: 500; font-family: "Playfair Display", serif; font-size: 1rem; color: var(--ink); }
+  .notebook-meta { font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; gap: 6px; margin-top: 4px; font-family: "IBM Plex Mono", monospace; }
+  .notebook-meta .dot { width: 6px; height: 6px; border-radius: 999px; display: inline-block; }
+  .notebook-meta .dot.on { background: var(--accent); }
+  .notebook-meta .dot.off { border: 1px solid var(--muted); }
+
+  .notebook-menu-btn {
+    position: absolute; top: 8px; right: 8px; opacity: 0; z-index: 3;
+    background: rgba(0,0,0,0.32); color: var(--ink);
+    border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; transition: opacity 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .notebook-card:hover .notebook-menu-btn { opacity: 1; }
+
+  /* Context Menu */
+  .context-menu {
+    position: absolute; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+    padding: 8px 0; z-index: 100; min-width: 170px;
+  }
+  .menu-item {
+    padding: 10px 16px; font-size: 0.88rem; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; gap: 10px; color: var(--ink);
+  }
+  .menu-item:hover { background: var(--surface-hover); }
+  .menu-item.danger { color: #E2793D; }
+
+  /* ---- View: Subject / Paper ---- */
+  .view-subject {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;
+    transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
+    background: var(--bg);
+  }
+  .view-subject.active { transform: translateX(0); z-index: 50; }
+
+  .paper-container { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 40px 40px 100px; display: block; }
+  .paper-canvas {
+    width: 100%; max-width: 780px; min-height: 100%; height: max-content; margin: 0 auto;
+    background: var(--paper); box-shadow: var(--page-glow);
+    padding: 60px 76px; position: relative;
+  }
+
+  .subject-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; background: rgba(25,29,26,0.82);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;
+  }
+  .subject-title-area { display: flex; align-items: center; gap: 16px; }
+  .subject-title-area h2 { font-size: 1.2rem; font-weight: 600; color: var(--ink); }
+
+  /* Upload / AI Area */
+  .empty-state { text-align: center; margin-top: 60px; color: var(--muted-on-paper); }
+  .dropzone {
+    border: 1.5px dashed var(--accent-dark); border-radius: var(--radius-lg);
+    padding: 36px; margin-top: 24px; background: rgba(199,154,75,0.05);
+    cursor: pointer; transition: all 0.2s ease; text-align: center;
+  }
+  .dropzone:hover { background: rgba(199,154,75,0.09); }
+
+  .files-preview { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+  .file-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+    background: rgba(0,0,0,0.03); border: 1px solid var(--paper-line);
+    border-radius: var(--radius-md);
+  }
+  .file-icon { color: var(--accent-dark); }
+
+  /* AI Synthesis Overlay */
+  .ai-overlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(251,247,238,0.94); z-index: 20;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  @keyframes nibPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(199,154,75,0.5); }
+    50% { box-shadow: 0 0 0 18px rgba(199,154,75,0); }
+  }
+  @keyframes sweepLight {
+    0% { transform: translateX(-15%); opacity: 0; }
+    12% { opacity: 1; }
+    50% { transform: translateX(45%); opacity: 1; }
+    88% { opacity: 0.15; }
+    100% { transform: translateX(85%); opacity: 0; }
+  }
+  .ai-sweep {
+    position: absolute; top: 0; left: 0; bottom: 0; width: 60%;
+    background: linear-gradient(90deg, rgba(242,197,114,0.30), rgba(242,197,114,0));
+    animation: sweepLight 2.6s ease-in-out infinite; pointer-events: none;
+  }
+  .ai-nib {
+    position: relative; width: 60px; height: 60px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--accent-light), var(--accent) 60%, var(--accent-dark));
+    animation: nibPulse 1.8s ease-in-out infinite; margin-bottom: 22px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .generated-lesson { animation: fadeUp 0.6s cubic-bezier(0.2, 0, 0, 1); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .generated-lesson h2 { font-size: 1.9rem; font-weight: 600; margin-bottom: 20px; color: var(--ink-on-paper); text-wrap: balance; }
+  .generated-lesson h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: 16px; margin-top: 32px; color: var(--ink-on-paper); }
+  .generated-lesson p { font-size: 1rem; line-height: 1.75; margin-bottom: 16px; color: var(--ink-on-paper); }
+
+  .formula-box { border: 1px solid var(--paper-line); background: rgba(199,154,75,0.06); border-radius: 6px; padding: 16px 20px; margin: 22px 0; }
+  .formula-box .label { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-dark); font-weight: 600; margin-bottom: 8px; }
+  .formula-box .formula { font-family: "Playfair Display", serif; font-style: italic; font-size: 1rem; color: var(--ink-on-paper); }
+
+  .diagram-box { margin: 24px 0; padding: 18px 20px 8px; background: rgba(255,255,255,0.5); border: 1px solid var(--paper-line); border-radius: 6px; }
+  .diagram-caption { text-align: center; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; color: var(--muted-on-paper); padding: 6px 0 12px; }
+
+  .ai-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 0.78rem;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-dark);
+    margin-bottom: 16px;
+  }
+
+  /* ---- Modals ---- */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+  .modal-content {
+    background: var(--surface); border-radius: var(--radius-lg);
+    width: 100%; max-width: 480px; padding: 32px; box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .modal-overlay.open .modal-content { transform: translateY(0); }
+
+  .modal-title { font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 24px; }
+  .form-group { margin-bottom: 22px; }
+  .form-label { display: block; font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .form-input {
+    width: 100%; padding: 12px 16px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface-hover);
+    font-family: "Work Sans", sans-serif; font-size: 1rem; color: var(--ink);
+  }
+  .form-input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+  /* Selectors for Covers & Papers */
+  .picker-grid { display: flex; gap: 12px; flex-wrap: wrap; }
+  .picker-item {
+    width: 40px; height: 40px; border-radius: 9px; cursor: pointer;
+    box-shadow: 0 0 0 2px transparent; transition: transform 0.2s; position: relative; overflow: hidden;
+  }
+  .picker-item::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 3px),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 3px);
+  }
+  .picker-item:hover { transform: scale(1.08); }
+  .picker-item.selected { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+  .paper-picker-item {
+    width: 56px; height: 56px; border-radius: 8px; border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .paper-picker-item.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+  .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; }
+
+  /* Cloth (cover) colors reused in picker */
+  .swatch-teal { background: var(--cloth-teal); }
+  .swatch-navy { background: var(--cloth-navy); }
+  .swatch-burgundy { background: var(--cloth-burgundy); }
+  .swatch-ochre { background: var(--cloth-ochre); }
+  .swatch-forest { background: var(--cloth-forest); }
+  .swatch-umber { background: var(--cloth-umber); }
+
+  /* Paper textures */
+  .paper-blank { background-color: var(--paper); }
+  .paper-ruled { background-color: var(--paper); background-image: linear-gradient(transparent 9px, var(--paper-line) 9px, var(--paper-line) 10px, transparent 10px); background-size: 100% 10px; }
+  .paper-grid { background-color: var(--paper); background-image: linear-gradient(var(--paper-line-grid) 1px, transparent 1px), linear-gradient(90deg, var(--paper-line-grid) 1px, transparent 1px); background-size: 9px 9px; }
+  .paper-dots { background-color: var(--paper); background-image: radial-gradient(var(--paper-line-dots) 1px, transparent 1px); background-size: 9px 9px; }
+
+  /* full-size paper backgrounds used on .paper-container */
+  .paper-container.paper-blank { background-color: var(--paper); background-image: none; }
+  .paper-container.paper-ruled { background-color: var(--paper); background-image: linear-gradient(transparent 31px, var(--paper-line) 31px, var(--paper-line) 32px, transparent 32px); background-size: 100% 32px; }
+  .paper-container.paper-grid { background-color: var(--paper); background-image: linear-gradient(var(--paper-line-grid) 1px, transparent 1px), linear-gradient(90deg, var(--paper-line-grid) 1px, transparent 1px); background-size: 24px 24px; }
+  .paper-container.paper-dots { background-color: var(--paper); background-image: radial-gradient(var(--paper-line-dots) 1.4px, transparent 1.4px); background-size: 24px 24px; }
+
+  svg { flex: none; }
+
+  /* ================= So sánh 3 phương án A/B/C (trong sổ Kinh tế vi mô) ================= */
+  .abc-intro { margin-bottom: 22px; }
+  .abc-intro .kicker {
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent-dark); margin-bottom: 8px; display: block;
+  }
+  .abc-intro h2 { font-size: 1.6rem; font-weight: 600; color: var(--ink-on-paper); margin-bottom: 8px; text-wrap: balance; }
+  .abc-intro p { font-size: 0.96rem; color: var(--muted-on-paper); max-width: 56ch; margin: 0; line-height: 1.6; }
+
+  .abc-panel { display: none; }
+  .abc-panel.active { display: block; animation: fadeUp 0.4s ease; }
+
+  .abc-frag-list { display: flex; flex-direction: column; gap: 12px; }
+  .abc-frag { display: flex; gap: 12px; background: rgba(255,255,255,0.55); border: 1px solid var(--paper-line); border-radius: 8px; padding: 14px 16px; }
+  .abc-frag-icon {
+    flex: none; width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.04); color: var(--muted-on-paper);
+  }
+  .abc-frag-icon svg { width: 17px; height: 17px; }
+  .abc-thumb {
+    flex: none; width: 92px; height: 64px; border-radius: 3px;
+    background: #fff; border: 1px solid var(--paper-line);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.14);
+    overflow: hidden; transform: rotate(-1.6deg);
+  }
+  .abc-thumb.tilt-r { transform: rotate(1.3deg); }
+  .abc-thumb svg { width: 100%; height: 100%; display: block; }
+  .abc-thumb-blur {
+    filter: blur(0.7px) saturate(0.82) brightness(1.04);
+    clip-path: polygon(0 0, 88% 0, 100% 14%, 100% 100%, 0 100%);
+  }
+  .abc-frag { position: relative; }
+  .abc-frag.clickable { cursor: pointer; transition: box-shadow .15s ease, transform .15s ease; }
+  .abc-frag.clickable:hover { box-shadow: 0 10px 22px -8px rgba(0,0,0,.18); transform: translateY(-2px); }
+  .abc-frag-manage { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; opacity: 0; transition: opacity .15s ease; }
+  .abc-frag:hover .abc-frag-manage { opacity: 1; }
+  .abc-frag-manage-btn {
+    width: 24px; height: 24px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(0,0,0,0.05); color: var(--muted-on-paper); display: flex; align-items: center; justify-content: center;
+  }
+  .abc-frag-manage-btn:hover { background: rgba(0,0,0,0.1); color: var(--ink-on-paper); }
+  .abc-frag-title[contenteditable="true"] { background: rgba(199,154,75,0.1); outline: 1px dashed var(--accent-dark); border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
+  .abc-frag-body { flex: 1; min-width: 0; }
+  .abc-frag-title { font-weight: 600; color: var(--ink-on-paper); font-size: 0.94rem; }
+  .abc-frag-meta { color: var(--muted-on-paper); font-size: 0.82rem; margin-top: 2px; }
+  .abc-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.68rem; font-weight: 600;
+    padding: 3px 9px; border-radius: 999px; margin-top: 7px;
+  }
+  .abc-pill-warn { background: rgba(174,74,21,0.12); color: #AE4A15; }
+  .abc-pill-ok { background: rgba(47,107,61,0.14); color: #2F6B3D; }
+  .abc-pill-muted { background: rgba(0,0,0,0.06); color: var(--muted-on-paper); }
+
+  .abc-frag-actions { margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .abc-btn {
+    font-family: "Work Sans", sans-serif; font-size: 0.82rem; font-weight: 600;
+    padding: 7px 14px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--paper-line); background: #fff; color: var(--ink-on-paper);
+  }
+  .abc-btn:hover { border-color: var(--accent-dark); }
+  .abc-btn-primary { background: var(--accent-dark); color: #fff; border-color: var(--accent-dark); }
+  .abc-btn-quiet { border-color: transparent; background: none; color: var(--accent-dark); padding: 7px 4px; }
+  .abc-btn[disabled] { opacity: .5; cursor: default; }
+
+  .abc-out {
+    margin-top: 10px; padding: 10px 12px; background: rgba(199,154,75,0.08);
+    border-radius: 8px; border: 1px dashed var(--paper-line); display: none;
+    font-size: 0.9rem; color: var(--ink-on-paper); line-height: 1.55;
+  }
+  .abc-out.open { display: block; }
+  .abc-out .abc-src { margin-top: 6px; color: var(--muted-on-paper); font-size: 0.78rem; }
+  .abc-src-link {
+    background: none; border: none; padding: 0; font: inherit; font-weight: 600;
+    color: var(--ink-on-paper); text-decoration: underline; text-decoration-color: var(--accent-dark);
+    text-underline-offset: 2px; cursor: pointer;
+  }
+  .abc-src-link:hover { color: var(--accent-dark); }
+  .abc-out-text[contenteditable="true"] { background: rgba(199,154,75,0.12); outline: 1px dashed var(--accent-dark); border-radius: 4px; padding: 2px 4px; margin: -2px -4px 8px; }
+
+  .abc-counter {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.76rem;
+    color: var(--muted-on-paper); background: rgba(0,0,0,0.04);
+    border: 1px solid var(--paper-line); border-radius: 999px; padding: 4px 10px; margin-top: 12px;
+  }
+
+  .abc-banner { display: flex; gap: 10px; align-items: flex-start; background: rgba(199,154,75,0.08); border: 1px solid var(--paper-line); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; }
+  .abc-banner .abc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-dark); margin-top: 6px; flex: none; }
+  .abc-banner .abc-dot.ok { background: #2F6B3D; }
+  .abc-banner strong { display: block; color: var(--ink-on-paper); font-family: "Work Sans", sans-serif; }
+  .abc-banner span.mono { color: var(--muted-on-paper); font-size: 0.76rem; }
+
+  .abc-subview { display: none; }
+  .abc-subview.active { display: block; }
+
+  .abc-sticky { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+
+  .caption { color: var(--ink-on-paper); border-radius: 6px; padding: 4px 6px; margin: -4px -6px 6px; line-height: 1.6; }
+  .caption[contenteditable="true"] { background: rgba(199,154,75,0.1); outline: 1px dashed var(--accent-dark); }
+  .caption-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+  .caption-row:last-child { margin-bottom: 0; }
+  .edited-tag { display: none; }
+  .edited-tag.show { display: inline-flex; }
+
+  /* Toggle nhỏ ở góc dưới bên phải — chỉ hiện khi đang mở sổ có demo A/B/C */
+  .abc-toggle {
+    position: fixed; right: 14px; bottom: 14px; z-index: 60;
+    display: flex; gap: 3px; padding: 5px; border-radius: 999px;
+    background: #0B0D0B; border: 1px solid rgba(212,175,55,0.32);
+    box-shadow: 0 12px 28px -10px rgba(0,0,0,.6);
+  }
+  .abc-toggle[hidden] { display: none; }
+  .abc-toggle-btn {
+    font-family: "Work Sans", sans-serif; font-size: 0.78rem; font-weight: 600;
+    padding: 7px 13px; border-radius: 999px; border: none; cursor: pointer;
+    background: transparent; color: #8E9B90;
+  }
+  .abc-toggle-btn:hover { color: #F0EAD6; }
+  .abc-toggle-btn.active { background: linear-gradient(135deg, #F3E5AB, #D4AF37); color: #111512; }
+
+  /* Xem lớn 1 ảnh/ghi chú thô */
+  .abc-preview-close {
+    position: absolute; top: 12px; right: 12px; z-index: 2;
+    width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.08); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .abc-preview-close:hover { background: rgba(255,255,255,0.16); }
+  .abc-preview-photo { width: 100%; line-height: 0; }
+  .abc-preview-photo svg { width: 100%; height: 230px; display: block; }
+  .abc-preview-body { padding: 22px 26px 26px; }
+  .abc-preview-title { font-family: "Playfair Display", serif; font-size: 1.2rem; font-weight: 600; color: var(--ink); }
+  .abc-preview-meta { color: var(--muted); font-size: 0.84rem; margin-top: 8px; }
+
+  /* Tài liệu nguồn (panel Thô) */
+  .abc-docs { margin-bottom: 20px; padding-bottom: 18px; border-bottom: 1px dashed var(--paper-line); }
+  .abc-docs-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .abc-docs-label { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-dark); font-weight: 600; }
+  .abc-doc-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .abc-doc-drop {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; border-radius: 8px; border: 1.5px dashed var(--accent-dark);
+    background: rgba(199,154,75,0.04); color: var(--accent-dark); cursor: pointer;
+    font-family: "Work Sans", sans-serif; font-size: .8rem; font-weight: 600;
+    transition: background .15s ease;
+  }
+  .abc-doc-drop:hover, .abc-doc-drop.drag { background: rgba(199,154,75,0.1); }
+  .abc-doc-drop svg { flex: none; }
+  .abc-doc { padding: 9px 12px; }
+  .abc-doc-remove {
+    flex: none; width: 26px; height: 26px; border-radius: 50%; border: none; cursor: pointer;
+    background: transparent; color: var(--muted-on-paper); display: flex; align-items: center; justify-content: center;
+  }
+  .abc-doc-remove:hover { background: rgba(174,74,21,0.1); color: #AE4A15; }
+
+  /* Toast phản hồi thao tác */
+  .abc-toast {
+    position: fixed; left: 50%; bottom: 74px; transform: translate(-50%, 10px);
+    z-index: 70; padding: 11px 20px; border-radius: 999px;
+    background: #0B0D0B; color: #F0EAD6; border: 1px solid rgba(212,175,55,0.35);
+    font-family: "Work Sans", sans-serif; font-size: .84rem; font-weight: 500;
+    opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease;
+    box-shadow: 0 14px 30px -10px rgba(0,0,0,.6);
+    max-width: min(420px, calc(100vw - 40px)); text-align: center;
+  }
+  .abc-toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- VIEW: DASHBOARD -->
+  <main class="view-dashboard" id="viewDashboard">
+    <div class="lamp-ambient"></div>
+
+    <!-- Decorative Hover Grid -->
+    <div class="cursor-glow"></div>
+    <div class="retro-grid-container">
+      <div class="retro-grid" id="bgGrid"></div>
+    </div>
+    <header class="topbar">
+      <div>
+        <div class="brand">
+          <img src="nootee-logo.jpg" alt="Nootee Logo" style="height: 50px; border-radius: 6px; box-shadow: var(--shadow-sm);" />
+          <div class="brand-name">Nootee</div>
+        </div>
+        <div class="brand-sub">Your AI companion for taking notes</div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('create')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Tạo sổ mới
+      </button>
+    </header>
+
+    <div class="notebook-grid" id="notebookGrid" style="position:relative;">
+      <!-- Notebooks injected by JS -->
+    </div>
+  </main>
+
+  <!-- VIEW: SUBJECT PAPER -->
+  <main class="view-subject" id="viewSubject">
+    <header class="subject-topbar">
+      <div class="subject-title-area">
+        <button class="btn-icon" onclick="goBack()" title="Quay lại">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h2 id="subjTitle">Tên Môn Học</h2>
+      </div>
+      <div>
+        <button class="btn" onclick="openModal('edit', currentSubjectId)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Tuỳ chỉnh sổ
+        </button>
+      </div>
+    </header>
+
+    <div class="paper-container paper-grid" id="paperContainer">
+      <div class="paper-canvas">
+
+        <!-- Empty / Upload State -->
+        <div id="uploadState">
+          <div class="empty-state">
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#B8AC8E" stroke-width="1.4" style="margin-bottom:16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            <h3 style="font-size:1.35rem; color:var(--ink-on-paper); margin-bottom:8px;">Chưa có bài học nào</h3>
+            <p>Tải lên tài liệu (PDF, Word, Ảnh) để AI Notes tự động tổng hợp thành bài học hoàn chỉnh.</p>
+          </div>
+
+          <div class="dropzone" onclick="simulateUpload()">
+            <div style="text-align:center; color:var(--accent-dark); font-weight:600; display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Bấm để chọn file tải lên...
+            </div>
+          </div>
+        </div>
+
+        <!-- Files Selected State -->
+        <div id="filesState" class="hidden">
+          <h3 style="margin-top:20px; color:var(--ink-on-paper);">Tài liệu đã chọn (3)</h3>
+          <div class="files-preview">
+            <div class="file-item">
+              <svg class="file-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div><strong style="color:var(--ink-on-paper);">Slide_Bai1.pdf</strong><div style="font-size:0.8rem; color:var(--muted-on-paper);">2.4 MB</div></div>
+            </div>
+            <div class="file-item">
+              <svg class="file-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <div><strong style="color:var(--ink-on-paper);">Ghi_chu_bang.jpg</strong><div style="font-size:0.8rem; color:var(--muted-on-paper);">1.1 MB</div></div>
+            </div>
+            <div class="file-item">
+              <svg class="file-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div><strong style="color:var(--ink-on-paper);">Tom_tat.docx</strong><div style="font-size:0.8rem; color:var(--muted-on-paper);">45 KB</div></div>
+            </div>
+          </div>
+          <div style="margin-top: 32px; display:flex; justify-content:center;">
+            <button class="btn btn-primary" style="padding:14px 30px; font-size:1.02rem;" onclick="startAISynthesis()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 L19 10 L12 21 L5 10 Z"/><line x1="12" y1="3" x2="12" y2="17"/></svg>
+              Bắt đầu AI Tổng hợp
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Processing Overlay -->
+        <div id="aiOverlay" class="ai-overlay hidden">
+          <div class="ai-sweep"></div>
+          <div class="ai-nib">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#231A08" stroke-width="1.6"><path d="M12 3 L19 10 L12 21 L5 10 Z"/><line x1="12" y1="3" x2="12" y2="17"/></svg>
+          </div>
+          <h3 id="aiOverlayTitle" style="font-size:1.3rem; font-style:italic; color:var(--ink-on-paper);">Nootee đang tạo và tổng hợp ghi chú cho bạn...</h3>
+          <p class="mono" id="aiOverlaySub" style="color:var(--muted-on-paper); margin-top:8px; font-size:12px;">Slide_Bai1.pdf · Ghi_chu_bang.jpg · Tom_tat.docx</p>
+        </div>
+
+        <!-- Generated Lesson -->
+        <div id="lessonState" class="hidden generated-lesson">
+
+          <div id="lessonContent-1" class="lesson-content hidden">
+            <!-- ===== So sánh 3 phương án A/B/C — dùng chung 1 bộ ghi chú thô ===== -->
+            <div class="abc-intro">
+              <span class="kicker">Buổi học · Kinh tế vi mô</span>
+              <h2 id="abcHeading">Ghi chú thô của bạn</h2>
+              <p id="abcDesc">Đây là những gì bạn đã lưu trong lúc học. Bấm A / B / C ở góc dưới phải để xem AI Notes có thể tổng hợp phần này theo 3 cách khác nhau — và chọn ra cách hợp nhất.</p>
+            </div>
+
+            <!-- Panel: Thô -->
+            <div class="abc-panel active" id="abcPanelRaw">
+              <div class="abc-docs">
+                <div class="abc-docs-head">
+                  <span class="abc-docs-label">Tài liệu nguồn</span>
+                </div>
+                <div class="abc-doc-list" id="abcDocList"></div>
+                <div class="abc-doc-drop" id="abcDocDrop">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Kéo thả hoặc bấm để tải thêm tài liệu (PDF, ảnh, Word)</span>
+                  <input type="file" id="abcDocFileInput" multiple hidden accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.webp">
+                </div>
+              </div>
+              <div class="abc-frag-list" id="abcFragRaw"></div>
+            </div>
+
+            <!-- Panel: A — Tự chọn -->
+            <div class="abc-panel" id="abcPanelA">
+              <div class="abc-subview active" id="abcAList">
+                <span class="abc-counter" id="abcCounterA">0 / 6 mục đã xử lý</span>
+                <div class="abc-frag-list" id="abcFragA" style="margin-top:12px;"></div>
+                <div class="abc-sticky" style="justify-content:flex-start;">
+                  <button class="abc-btn abc-btn-primary" id="aFinish">Hoàn tất &amp; Tổng hợp ghi chú</button>
+                </div>
+              </div>
+              <div class="abc-subview" id="abcAFinal">
+                <div class="abc-banner">
+                  <div class="abc-dot ok"></div>
+                  <div>
+                    <strong>Đã tổng hợp xong theo lựa chọn của bạn</strong>
+                    <span class="mono">Kinh tế vi mô · dựa trên các mục bạn đã xử lý</span>
+                  </div>
+                </div>
+                <div class="abc-lesson-slot" id="abcALessonSlot"></div>
+                <button class="abc-btn abc-btn-quiet" id="aBackToEdit">← Quay lại chỉnh sửa</button>
+              </div>
+            </div>
+
+            <!-- Panel: B — Cùng làm -->
+            <div class="abc-panel" id="abcPanelB">
+              <div class="abc-subview active" id="abcBCompose">
+                <div class="formula-box" style="margin:0 0 18px;">
+                  <div class="label">Cung – Cầu &amp; Giá cân bằng</div>
+                  <div class="caption" contenteditable="false" data-cap="b1" style="font-family:'Work Sans',sans-serif; font-style:normal;">Đường cung dốc lên, đường cầu dốc xuống; điểm hai đường cắt nhau là mức giá cân bằng (ví dụ: giá xăng dầu thầy cho đầu giờ).</div>
+                  <button class="abc-btn abc-btn-quiet" data-edit-target="b1">Sửa đoạn này</button>
+                  <span class="abc-pill abc-pill-ok edited-tag" data-edited-for="b1">đã sửa</span>
+                </div>
+                <div class="formula-box" style="margin:0 0 18px;">
+                  <div class="label">Độ co giãn &amp; Thặng dư</div>
+                  <div class="caption" contenteditable="false" data-cap="b2" style="font-family:'Work Sans',sans-serif; font-style:normal;">Độ co giãn cầu theo giá = %Δ lượng cầu / %Δ giá.</div>
+                  <button class="abc-btn abc-btn-quiet" data-edit-target="b2">Sửa đoạn này</button>
+                  <span class="abc-pill abc-pill-ok edited-tag" data-edited-for="b2">đã sửa</span>
+                  <div class="caption" contenteditable="false" data-cap="b3" style="font-family:'Work Sans',sans-serif; font-style:normal; margin-top:12px;">Thặng dư tiêu dùng và thặng dư sản xuất là phần diện tích quanh mức giá cân bằng, tương ứng phía đường cầu và đường cung.</div>
+                  <div style="margin:8px 0 10px;"><span class="abc-pill abc-pill-warn">Ảnh mờ — AI đoán, vui lòng kiểm tra</span></div>
+                  <button class="abc-btn abc-btn-quiet" data-edit-target="b3">Sửa đoạn này</button>
+                  <span class="abc-pill abc-pill-ok edited-tag" data-edited-for="b3">đã sửa</span>
+                </div>
+                <div class="abc-sticky">
+                  <button class="abc-btn" id="bDiscard">Bỏ đề xuất này</button>
+                  <button class="abc-btn abc-btn-primary" id="bSave">Xem lại &amp; Lưu</button>
+                </div>
+              </div>
+              <div class="abc-subview" id="abcBSaved">
+                <div class="abc-banner">
+                  <div class="abc-dot ok"></div>
+                  <div>
+                    <strong>Đã lưu vào ghi chú của bạn</strong>
+                    <span class="mono">Kinh tế vi mô · vừa xong · đã qua bước bạn xác nhận</span>
+                  </div>
+                </div>
+                <div class="abc-lesson-slot" id="abcBLessonSlot"></div>
+                <button class="abc-btn abc-btn-quiet" id="bBackToEdit">← Quay lại chỉnh sửa</button>
+              </div>
+            </div>
+
+            <!-- Panel: C — Tự động -->
+            <div class="abc-panel" id="abcPanelC">
+              <div class="abc-subview active" id="abcCAuto">
+                <div class="abc-banner">
+                  <div class="abc-dot"></div>
+                  <div>
+                    <strong>AI đã tự động tổng hợp ghi chú của buổi học này</strong>
+                    <span class="mono">Tự động · chưa được bạn xem lại</span>
+                  </div>
+                </div>
+                <div class="formula-box" style="margin:0 0 18px;">
+                  <div class="label">Cung – Cầu &amp; Giá cân bằng</div>
+                  <div class="caption" contenteditable="false" data-cap="c1" style="font-family:'Work Sans',sans-serif; font-style:normal;">Đường cung dốc lên, đường cầu dốc xuống; điểm hai đường cắt nhau là mức giá cân bằng (ví dụ: giá xăng dầu thầy cho đầu giờ).</div>
+                </div>
+                <div class="formula-box" style="margin:0 0 18px;">
+                  <div class="label">Độ co giãn &amp; Thặng dư</div>
+                  <div class="caption" contenteditable="false" data-cap="c2" style="font-family:'Work Sans',sans-serif; font-style:normal;">Độ co giãn cầu theo giá = %Δ lượng cầu / %Δ giá.</div>
+                  <div class="caption" contenteditable="false" data-cap="c3" style="font-family:'Work Sans',sans-serif; font-style:normal; margin-top:12px;">Thặng dư tiêu dùng và thặng dư sản xuất là phần diện tích quanh mức giá cân bằng, tương ứng phía đường cầu và đường cung.</div>
+                  <span class="abc-pill abc-pill-warn">AI tự tin thấp trên đoạn này</span>
+                </div>
+                <div class="abc-frag-actions">
+                  <button class="abc-btn" data-edit-target="c1,c2,c3" id="cEdit">Sửa</button>
+                  <button class="abc-btn" id="cShowRaw">Xem nội dung gốc</button>
+                  <button class="abc-btn abc-btn-quiet" id="cRevert">Khôi phục bản ghi thô ban đầu</button>
+                </div>
+                <div id="abcRawThumbs" style="display:none;">
+                  <p class="mono" style="color:var(--muted-on-paper); font-size:.78rem; margin:12px 0 4px;">Toàn bộ ghi chú thô mà AI đã dùng để tổng hợp — bấm vào từng mục để xem lại:</p>
+                  <div class="abc-frag-list" id="abcFragCSource"></div>
+                </div>
+              </div>
+              <div class="abc-subview" id="abcCReverted">
+                <p style="color:var(--muted-on-paper); font-size:.92rem; margin-bottom:14px;">Bản tổng hợp tự động đã được gỡ. Đây lại là các mảnh ghi chú gốc.</p>
+                <div class="abc-frag-list" id="abcFragC"></div>
+                <div class="abc-sticky" style="justify-content:flex-start;">
+                  <button class="abc-btn abc-btn-primary" id="cRerun">Chạy lại tự động tổng hợp</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: Create / Edit Subject -->
+  <div class="modal-overlay" id="subjectModal">
+    <div class="modal-content">
+      <h2 class="modal-title" id="modalTitle">Tạo Sổ Mới</h2>
+
+      <div class="form-group">
+        <label class="form-label">Tên môn học</label>
+        <input type="text" class="form-input" id="inpTitle" placeholder="Ví dụ: Kinh tế vĩ mô..." autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Bìa sổ</label>
+        <div class="picker-grid" id="coverPicker">
+          <div class="picker-item swatch-teal selected" data-val="teal"></div>
+          <div class="picker-item swatch-navy" data-val="navy"></div>
+          <div class="picker-item swatch-burgundy" data-val="burgundy"></div>
+          <div class="picker-item swatch-ochre" data-val="ochre"></div>
+          <div class="picker-item swatch-forest" data-val="forest"></div>
+          <div class="picker-item swatch-umber" data-val="umber"></div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Loại giấy</label>
+        <div class="picker-grid" id="paperPicker">
+          <div class="paper-picker-item paper-blank" data-val="blank"></div>
+          <div class="paper-picker-item paper-ruled selected" data-val="ruled"></div>
+          <div class="paper-picker-item paper-grid" data-val="grid"></div>
+          <div class="paper-picker-item paper-dots" data-val="dots"></div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-quiet" onclick="closeModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="saveSubject()">Lưu thay đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEXT MENU -->
+  <div id="contextMenu" class="context-menu hidden">
+    <div class="menu-item" onclick="triggerEdit()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Chỉnh sửa / Đổi bìa
+    </div>
+    <div class="menu-item danger" onclick="triggerDelete()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      Xoá sổ này
+    </div>
+  </div>
+
+  <!-- Xem lớn 1 ảnh/ghi chú thô -->
+  <div class="modal-overlay" id="abcPreviewModal">
+    <div class="modal-content" id="abcPreviewContent" style="max-width: 420px; padding: 0; overflow: hidden; position: relative;">
+      <button class="abc-preview-close" id="abcPreviewClose" title="Đóng">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div id="abcPreviewInner"></div>
+    </div>
+  </div>
+
+  <!-- Thông báo ngắn -->
+  <div class="abc-toast" id="abcToast"></div>
+
+  <!-- Toggle nhỏ A/B/C — chỉ hiện khi đang mở sổ Kinh tế vi mô -->
+  <div class="abc-toggle" id="abcToggle" hidden>
+    <button class="abc-toggle-btn active" data-panel="raw">Thô</button>
+    <button class="abc-toggle-btn" data-panel="a">A</button>
+    <button class="abc-toggle-btn" data-panel="b">B</button>
+    <button class="abc-toggle-btn" data-panel="c">C</button>
+  </div>
+
+</div>
+
+<script>
+  // ---- STATE ----
+  let subjects = [
+    { id: 1, title: 'Kinh tế vi mô', cover: 'teal', paper: 'grid', hasLesson: true }
+  ];
+  let currentSubjectId = null;
+  let editingId = null;
+  let contextMenuTarget = null;
+
+  const DOM = {
+    grid: document.getElementById('notebookGrid'),
+    viewDash: document.getElementById('viewDashboard'),
+    viewSubj: document.getElementById('viewSubject'),
+    modal: document.getElementById('subjectModal'),
+    ctxMenu: document.getElementById('contextMenu'),
+    inpTitle: document.getElementById('inpTitle'),
+    paperContainer: document.getElementById('paperContainer'),
+    subjTitle: document.getElementById('subjTitle'),
+    uploadState: document.getElementById('uploadState'),
+    filesState: document.getElementById('filesState'),
+    aiOverlay: document.getElementById('aiOverlay'),
+    lessonState: document.getElementById('lessonState'),
+    modalTitle: document.getElementById('modalTitle'),
+    abcToggle: document.getElementById('abcToggle')
+  };
+
+  // ---- RENDER DASHBOARD ----
+  function renderGrid() {
+    DOM.grid.innerHTML = subjects.map(sub => `
+      <div class="notebook-card" onclick="openSubject(${sub.id})">
+        <div class="notebook-cover cover-${sub.cover}">
+          <div class="cover-spine"></div>
+          <div class="cover-corner"></div>
+          <button class="notebook-menu-btn" onclick="openContextMenu(event, ${sub.id})">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+          <div class="cover-title">${sub.title}</div>
+        </div>
+        <div>
+          <div class="notebook-title">${sub.title}</div>
+          <div class="notebook-meta"><span class="dot ${sub.hasLesson ? 'on' : 'off'}"></span>${sub.hasLesson ? '1 Bài học' : 'Trống'}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ---- SUBJECT VIEW ----
+  function openSubject(id) {
+    const sub = subjects.find(s => s.id === id);
+    if(!sub) return;
+    currentSubjectId = id;
+
+    DOM.subjTitle.textContent = sub.title;
+    DOM.paperContainer.className = 'paper-container paper-' + sub.paper;
+
+    DOM.aiOverlay.classList.add('hidden');
+
+    if (sub.hasLesson) {
+      DOM.uploadState.classList.add('hidden');
+      DOM.filesState.classList.add('hidden');
+      DOM.lessonState.classList.remove('hidden');
+      document.querySelectorAll('.lesson-content').forEach(el => el.classList.add('hidden'));
+      const contentEl = document.getElementById('lessonContent-' + id);
+      if(contentEl) contentEl.classList.remove('hidden');
+    } else {
+      DOM.lessonState.classList.add('hidden');
+      DOM.filesState.classList.add('hidden');
+      DOM.uploadState.classList.remove('hidden');
+    }
+
+    DOM.viewSubj.classList.add('active');
+
+    // Toggle A/B/C chỉ áp dụng cho sổ Kinh tế vi mô (id 1)
+    if (id === 1) {
+      DOM.abcToggle.removeAttribute('hidden');
+    } else {
+      DOM.abcToggle.setAttribute('hidden', '');
+    }
+  }
+
+  function goBack() {
+    DOM.viewSubj.classList.remove('active');
+    DOM.abcToggle.setAttribute('hidden', '');
+    setTimeout(renderGrid, 300); // refresh metadata just in case
+  }
+
+  // ---- UPLOAD & AI FLOW ----
+  function simulateUpload() {
+    DOM.uploadState.classList.add('hidden');
+    DOM.filesState.classList.remove('hidden');
+  }
+
+  function startAISynthesis() {
+    DOM.filesState.classList.add('hidden');
+    document.getElementById('aiOverlayTitle').textContent = 'Nootee đang tạo và tổng hợp ghi chú cho bạn...';
+    document.getElementById('aiOverlaySub').textContent = 'Slide_Bai1.pdf · Ghi_chu_bang.jpg · Tom_tat.docx';
+    DOM.aiOverlay.classList.remove('hidden');
+
+    setTimeout(() => {
+      DOM.aiOverlay.classList.add('hidden');
+      DOM.lessonState.classList.remove('hidden');
+      document.querySelectorAll('.lesson-content').forEach(el => el.classList.add('hidden'));
+      const contentEl = document.getElementById('lessonContent-' + currentSubjectId);
+      if(contentEl) contentEl.classList.remove('hidden');
+
+      const sub = subjects.find(s => s.id === currentSubjectId);
+      if(sub) sub.hasLesson = true;
+    }, 2500);
+  }
+
+  // ---- MODAL ----
+  let selectedCover = 'teal';
+  let selectedPaper = 'ruled';
+
+  function openModal(mode, id = null) {
+    editingId = mode === 'edit' ? id : null;
+    DOM.modalTitle.textContent = mode === 'edit' ? 'Tuỳ chỉnh sổ tay' : 'Tạo sổ mới';
+
+    if (mode === 'edit') {
+      const sub = subjects.find(s => s.id === id);
+      DOM.inpTitle.value = sub.title;
+      selectOption('coverPicker', sub.cover);
+      selectOption('paperPicker', sub.paper);
+      selectedCover = sub.cover;
+      selectedPaper = sub.paper;
+    } else {
+      DOM.inpTitle.value = '';
+      selectOption('coverPicker', 'teal');
+      selectOption('paperPicker', 'ruled');
+      selectedCover = 'teal';
+      selectedPaper = 'ruled';
+    }
+
+    DOM.modal.classList.add('open');
+    DOM.inpTitle.focus();
+  }
+
+  function closeModal() {
+    DOM.modal.classList.remove('open');
+  }
+
+  function saveSubject() {
+    const title = DOM.inpTitle.value.trim() || 'Môn học mới';
+
+    if (editingId) {
+      const sub = subjects.find(s => s.id === editingId);
+      sub.title = title;
+      sub.cover = selectedCover;
+      sub.paper = selectedPaper;
+
+      if (currentSubjectId === editingId) {
+        DOM.subjTitle.textContent = title;
+        DOM.paperContainer.className = 'paper-container paper-' + selectedPaper;
+      }
+    } else {
+      subjects.push({
+        id: Date.now(),
+        title: title,
+        cover: selectedCover,
+        paper: selectedPaper,
+        hasLesson: false
+      });
+    }
+
+    closeModal();
+    renderGrid();
+  }
+
+  // Picker logic
+  function setupPicker(parentId, onChange) {
+    const parent = document.getElementById(parentId);
+    parent.addEventListener('click', e => {
+      const item = e.target.closest('[data-val]');
+      if (!item) return;
+      selectOption(parentId, item.dataset.val);
+      onChange(item.dataset.val);
+    });
+  }
+  function selectOption(parentId, val) {
+    const parent = document.getElementById(parentId);
+    parent.querySelectorAll('[data-val]').forEach(el => el.classList.remove('selected'));
+    const target = parent.querySelector(`[data-val="${val}"]`);
+    if(target) target.classList.add('selected');
+  }
+
+  setupPicker('coverPicker', val => selectedCover = val);
+  setupPicker('paperPicker', val => selectedPaper = val);
+
+  // ---- CONTEXT MENU ----
+  function openContextMenu(e, id) {
+    e.stopPropagation();
+    contextMenuTarget = id;
+    const rect = e.target.closest('.notebook-menu-btn').getBoundingClientRect();
+    DOM.ctxMenu.style.left = (rect.left - 130) + 'px';
+    DOM.ctxMenu.style.top = (rect.bottom + 8) + 'px';
+    DOM.ctxMenu.classList.remove('hidden');
+  }
+
+  document.addEventListener('click', e => {
+    if(!e.target.closest('.context-menu')) {
+      DOM.ctxMenu.classList.add('hidden');
+    }
+  });
+
+  function triggerEdit() {
+    DOM.ctxMenu.classList.add('hidden');
+    openModal('edit', contextMenuTarget);
+  }
+
+  function triggerDelete() {
+    DOM.ctxMenu.classList.add('hidden');
+    if(confirm("Bạn có chắc chắn muốn xoá sổ này?")) {
+      subjects = subjects.filter(s => s.id !== contextMenuTarget);
+      renderGrid();
+      if(currentSubjectId === contextMenuTarget) {
+        goBack();
+      }
+    }
+  }
+
+  // Init
+  renderGrid();
+
+  // Generate Background Letter Grid
+  const letters = "NOOTEEAINOTESHERITAGE";
+  const bgGrid = document.getElementById('bgGrid');
+  let gridHtml = '';
+  for(let i=0; i<850; i++) {
+    gridHtml += `<div class="letter">${letters[Math.floor(Math.random() * letters.length)]}</div>`;
+  }
+  bgGrid.innerHTML = gridHtml;
+
+  // Spotlight Mouse Tracking
+  document.addEventListener('mousemove', e => {
+    document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
+    document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
+  });
+</script>
+
+<script>
+  // ================= So sánh 3 phương án A/B/C (Kinh tế vi mô) =================
+  (function(){
+    var ICONS = {
+      photo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5.5-5.5L9 17"/></svg>',
+      note:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h14v16H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
+      flag:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3v18"/><path d="M6 4h11l-2.5 4L17 12H6"/></svg>'
+    };
+    var PENCIL_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+    var TRASH_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+    var FRAGMENTS = [
+      { id:'f1', icon:'photo', title:'Slide 4 · Đường cung – đường cầu', meta:'Ảnh chụp · rõ nét',
+        aiOut:'Đường cung dốc lên, đường cầu dốc xuống; điểm hai đường cắt nhau là mức giá cân bằng.',
+        src:'Ảnh Slide 4 + ghi chú "giá cân bằng..." kế bên' },
+      { id:'f2', icon:'photo', title:'Slide 7 · Công thức độ co giãn', meta:'Ảnh chụp · rõ nét',
+        aiOut:'Độ co giãn cầu theo giá đo mức % lượng cầu thay đổi khi giá thay đổi 1%.',
+        src:'Ảnh Slide 7 + ghi chú công thức bên cạnh' },
+      { id:'f3', icon:'photo', title:'Slide 9 · Đồ thị thặng dư', meta:'Ảnh chụp', blurry:true,
+        aiOut:'Thặng dư tiêu dùng là phần diện tích giữa đường cầu và mức giá thị trường.',
+        src:'Ảnh Slide 9 — ảnh mờ, thiếu góc: AI đoán một phần nội dung' },
+      { id:'f4', icon:'note', title:'Giá cân bằng là điểm cắt giữa 2 đường — thầy cho ví dụ giá xăng dầu ngay đầu giờ học.', meta:'Note gõ tay trong lúc học',
+        aiOut:'Ghi nhớ: giá cân bằng = điểm cắt cung–cầu, ví dụ thực tế là giá xăng dầu.',
+        src:'Note gõ tay của bạn' },
+      { id:'f5', icon:'note', title:'Độ co giãn = %Δ lượng cầu / %Δ giá — cần hỏi lại thầy phần co giãn hoàn toàn.', meta:'Note gõ tay trong lúc học',
+        aiOut:'Công thức độ co giãn đã ghi đúng; còn 1 câu hỏi mở: trường hợp co giãn hoàn toàn.',
+        src:'Note gõ tay của bạn' },
+      { id:'f6', icon:'flag', title:'Chưa hiểu: thặng dư sản xuất', meta:'Flag bạn đã đánh dấu trong buổi học',
+        aiOut:'Gợi ý ôn lại: thặng dư sản xuất là phần diện tích giữa đường cung và mức giá thị trường (đối xứng thặng dư tiêu dùng).',
+        src:'Flag "chưa hiểu" + nội dung Slide 9' }
+    ];
+
+    var THUMBS = {
+      f1: '<svg viewBox="0 0 120 84" xmlns="http://www.w3.org/2000/svg">' +
+            '<rect width="120" height="84" fill="#FFFFFF"/>' +
+            '<rect x="0" y="0" width="120" height="16" fill="#223A2F"/>' +
+            '<text x="8" y="11" font-size="7.5" font-weight="700" fill="#F3E5AB" font-family="Playfair Display, serif">Cung – Cầu</text>' +
+            '<line x1="16" y1="30" x2="16" y2="72" stroke="#5B4A3C" stroke-width="1"/>' +
+            '<line x1="16" y1="72" x2="108" y2="72" stroke="#5B4A3C" stroke-width="1"/>' +
+            '<path d="M22,64 L100,24" stroke="#2A2420" stroke-width="1.6" fill="none"/>' +
+            '<path d="M22,24 L100,64" stroke="#2A2420" stroke-width="1.6" fill="none"/>' +
+            '<circle cx="61" cy="44" r="2.6" fill="#996515"/>' +
+            '<text x="8" y="80" font-size="6.5" fill="#8E9B90" font-family="Work Sans, sans-serif">Điểm cân bằng thị trường</text>' +
+            '<polygon points="0,16 40,16 0,42" fill="#FFFFFF" opacity="0.16"/>' +
+          '</svg>',
+      f2: '<svg viewBox="0 0 120 84" xmlns="http://www.w3.org/2000/svg">' +
+            '<rect width="120" height="84" fill="#FFFFFF"/>' +
+            '<rect x="0" y="0" width="120" height="16" fill="#223A2F"/>' +
+            '<text x="8" y="11" font-size="7.5" font-weight="700" fill="#F3E5AB" font-family="Playfair Display, serif">Độ co giãn</text>' +
+            '<text x="10" y="38" font-size="7.5" fill="#2A2420" font-family="IBM Plex Mono, monospace">E = %ΔQ</text>' +
+            '<line x1="10" y1="44" x2="50" y2="44" stroke="#2A2420" stroke-width="1"/>' +
+            '<text x="10" y="56" font-size="7.5" fill="#2A2420" font-family="IBM Plex Mono, monospace">%ΔP</text>' +
+            '<text x="10" y="73" font-size="6.5" fill="#8E9B90" font-family="Work Sans, sans-serif">Co giãn cầu theo giá</text>' +
+            '<polygon points="120,16 82,16 120,40" fill="#FFFFFF" opacity="0.16"/>' +
+          '</svg>',
+      f3: '<svg viewBox="0 0 120 84" xmlns="http://www.w3.org/2000/svg">' +
+            '<rect width="120" height="84" fill="#FFFFFF"/>' +
+            '<rect x="0" y="0" width="120" height="16" fill="#223A2F"/>' +
+            '<text x="8" y="11" font-size="7.5" font-weight="700" fill="#F3E5AB" font-family="Playfair Display, serif">Thặng dư</text>' +
+            '<line x1="16" y1="30" x2="16" y2="72" stroke="#5B4A3C" stroke-width="1"/>' +
+            '<line x1="16" y1="72" x2="108" y2="72" stroke="#5B4A3C" stroke-width="1"/>' +
+            '<path d="M22,64 L100,24" stroke="#2A2420" stroke-width="1.6" fill="none"/>' +
+            '<path d="M22,24 L100,64" stroke="#2A2420" stroke-width="1.6" fill="none"/>' +
+            '<polygon points="22,24 61,44 22,64" fill="#D4AF37" opacity="0.32"/>' +
+            '<polygon points="100,24 61,44 100,64" fill="#996515" opacity="0.26"/>' +
+            '<circle cx="61" cy="44" r="2.6" fill="#996515"/>' +
+          '</svg>'
+    };
+
+    // ---- Thông báo ngắn (toast) ----
+    var toastEl = document.getElementById('abcToast');
+    var toastTimer = null;
+    function showToast(msg){
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2400);
+    }
+
+    // ---- Nootee đang tổng hợp (dùng chung overlay AI) ----
+    function showSynth(title, sub, cb, ms){
+      document.getElementById('aiOverlayTitle').textContent = title;
+      document.getElementById('aiOverlaySub').textContent = sub;
+      DOM.aiOverlay.classList.remove('hidden');
+      setTimeout(function(){
+        DOM.aiOverlay.classList.add('hidden');
+        cb();
+      }, ms || 1800);
+    }
+
+    // ---- Mảnh dùng chung khi ráp bài học hoàn chỉnh (A sau khi hoàn tất, B sau khi lưu) ----
+    var AI_BADGE_HTML =
+      '<div class="ai-badge">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3 L19 10 L12 21 L5 10 Z"/><line x1="12" y1="3" x2="12" y2="17"/></svg>' +
+        'Tổng hợp bởi Nootee' +
+      '</div>';
+    var DIAGRAM_HTML =
+      '<div class="diagram-box">' +
+        '<svg viewBox="0 0 400 240" width="100%" height="190" style="display:block;">' +
+          '<line x1="36" y1="14" x2="36" y2="200" stroke="#2A2420" stroke-width="1.4"/>' +
+          '<line x1="36" y1="200" x2="376" y2="200" stroke="#2A2420" stroke-width="1.4"/>' +
+          '<path d="M56,180 L340,32" stroke="#2A2420" stroke-width="1.8" fill="none"/>' +
+          '<path d="M56,32 L340,180" stroke="#2A2420" stroke-width="1.8" fill="none"/>' +
+          '<line x1="198" y1="106" x2="198" y2="200" stroke="#996515" stroke-width="1.4" stroke-dasharray="4 4"/>' +
+          '<line x1="36" y1="106" x2="198" y2="106" stroke="#996515" stroke-width="1.4" stroke-dasharray="4 4"/>' +
+          '<circle cx="198" cy="106" r="4" fill="#996515"/>' +
+          '<text x="204" y="101" font-family="IBM Plex Mono, monospace" font-size="11" fill="#996515">P*, Q*</text>' +
+          '<text x="330" y="27" font-family="Work Sans, sans-serif" font-size="12" fill="#2A2420">Cung</text>' +
+          '<text x="330" y="195" font-family="Work Sans, sans-serif" font-size="12" fill="#2A2420">Cầu</text>' +
+          '<text x="8" y="16" font-family="Work Sans, sans-serif" font-size="11" fill="#6B5D4E">Giá</text>' +
+          '<text x="352" y="216" font-family="Work Sans, sans-serif" font-size="11" fill="#6B5D4E">Lượng</text>' +
+        '</svg>' +
+        '<div class="diagram-caption">Hình trích từ Ghi_chu_bang.jpg</div>' +
+      '</div>';
+
+    function buildFinalLessonHTMLB(){
+      var b1 = document.querySelector('[data-cap="b1"]').textContent.trim();
+      var b2 = document.querySelector('[data-cap="b2"]').textContent.trim();
+      var b3 = document.querySelector('[data-cap="b3"]').textContent.trim();
+      return AI_BADGE_HTML +
+        '<h2>Bài 1: Cung, Cầu và Cân bằng thị trường</h2>' +
+        '<p>' + b1 + '</p>' +
+        '<div class="formula-box"><div class="label">Công thức cốt lõi</div><div class="formula">' + b2 + '</div></div>' +
+        '<p>' + b3 + '</p>' +
+        DIAGRAM_HTML;
+    }
+
+    function fragCard(f, opts){
+      opts = opts || {};
+      var blurryPill = f.blurry ? '<span class="abc-pill abc-pill-warn">Ảnh mờ, thiếu góc</span>' : '';
+      var thumb = '';
+      if(opts.showThumb && THUMBS[f.id]){
+        var thumbClass = 'abc-thumb' + (f.blurry ? ' abc-thumb-blur' : (f.id === 'f2' ? ' tilt-r' : ''));
+        thumb = '<div class="'+thumbClass+'">' + THUMBS[f.id] + '</div>';
+      }
+      var manage = opts.manage ?
+        '<div class="abc-frag-manage">' +
+          '<button class="abc-frag-manage-btn" data-manage-edit="'+f.id+'" title="Sửa nội dung">'+PENCIL_SVG+'</button>' +
+          '<button class="abc-frag-manage-btn" data-manage-del="'+f.id+'" title="Xoá mục này">'+TRASH_SVG+'</button>' +
+        '</div>' : '';
+      var actions = '';
+      var out = '';
+      if(opts.interactive){
+        var STATUS_LABEL = { accepted:'đã chấp nhận', edited:'đã sửa', skipped:'đã bỏ qua' };
+        var STATUS_CLASS = { accepted:'abc-pill-ok', edited:'abc-pill-ok', skipped:'abc-pill-muted' };
+        var isDone = !!f.abcStatus;
+        var pillLabel = isDone ? STATUS_LABEL[f.abcStatus] : 'thô';
+        var pillClass = isDone ? STATUS_CLASS[f.abcStatus] : 'abc-pill-muted';
+        actions = '<div class="abc-frag-actions">' +
+          '<button class="abc-btn" data-process="'+f.id+'"'+(isDone ? ' disabled' : '')+'>Xử lý mục này</button>' +
+          '<span class="abc-pill '+pillClass+'" data-status="'+f.id+'">'+pillLabel+'</span>' +
+          '</div>';
+        var doneDisabled = isDone ? ' disabled' : '';
+        out = '<div class="abc-out'+(isDone ? ' open' : '')+'" id="out-'+f.id+'">' +
+              '<div class="abc-out-text" contenteditable="false">' + f.aiOut + '</div>' +
+              '<div class="abc-src">Nguồn: <button class="abc-src-link" data-src-frag="'+f.id+'">' + f.src + '</button></div>' +
+              '<div class="abc-frag-actions" style="margin-top:8px;" data-out-actions="'+f.id+'">' +
+                '<button class="abc-btn abc-btn-quiet" data-action="accept"'+doneDisabled+'>Chấp nhận</button>' +
+                '<button class="abc-btn abc-btn-quiet" data-action="edit"'+doneDisabled+'>Sửa</button>' +
+                '<button class="abc-btn abc-btn-quiet" data-action="skip"'+doneDisabled+'>Bỏ qua</button>' +
+              '</div></div>';
+      }
+      var clickable = opts.showThumb ? ' clickable' : '';
+      return '<div class="abc-frag'+clickable+'" data-frag="'+f.id+'">' +
+        manage +
+        (thumb || '<div class="abc-frag-icon">'+ICONS[f.icon]+'</div>') +
+        '<div class="abc-frag-body">' +
+          '<div class="abc-frag-title">'+f.title+'</div>' +
+          '<div class="abc-frag-meta">'+f.meta+'</div>' +
+          blurryPill +
+          actions + out +
+        '</div></div>';
+    }
+
+    function renderFragLists(){
+      document.getElementById('abcFragRaw').innerHTML = FRAGMENTS.map(function(f){ return fragCard(f, {interactive:false, showThumb:true, manage:true}); }).join('');
+      document.getElementById('abcFragA').innerHTML = FRAGMENTS.map(function(f){ return fragCard(f, {interactive:true}); }).join('');
+      document.getElementById('abcFragC').innerHTML = FRAGMENTS.map(function(f){ return fragCard(f, {interactive:false}); }).join('');
+      document.getElementById('abcFragCSource').innerHTML = FRAGMENTS.map(function(f){ return fragCard(f, {interactive:false, showThumb:true}); }).join('');
+      processedCount = FRAGMENTS.filter(function(f){ return !!f.abcStatus; }).length;
+      updateCounterA();
+    }
+    function updateCounterA(){
+      document.getElementById('abcCounterA').textContent = processedCount + ' / ' + FRAGMENTS.length + ' mục đã xử lý';
+    }
+    var processedCount = 0;
+    renderFragLists();
+
+    // ---- Tài liệu nguồn (panel Thô) ----
+    var DOC_ICONS = {
+      pdf: '<svg class="file-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+      img: '<svg class="file-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'
+    };
+    var DOCS = [];
+    function formatSize(bytes){
+      if(bytes < 1024) return bytes + ' B';
+      if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' KB';
+      return (bytes/1024/1024).toFixed(1) + ' MB';
+    }
+
+    function renderDocs(){
+      document.getElementById('abcDocList').innerHTML = DOCS.map(function(d){
+        return '<div class="abc-doc file-item">' +
+          DOC_ICONS[d.type] +
+          '<div style="flex:1; min-width:0;"><strong style="color:var(--ink-on-paper); font-size:.9rem;">'+d.name+'</strong>' +
+          '<div style="font-size:.76rem; color:var(--muted-on-paper);">'+d.size+'</div></div>' +
+          '<button class="abc-doc-remove" data-remove-doc="'+d.id+'" title="Bỏ tài liệu này">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+          '</button>' +
+        '</div>';
+      }).join('');
+    }
+    renderDocs();
+
+    document.getElementById('abcDocList').addEventListener('click', function(e){
+      var btn = e.target.closest('[data-remove-doc]');
+      if(!btn) return;
+      var id = btn.getAttribute('data-remove-doc');
+      var doc = DOCS.find(function(d){ return d.id === id; });
+      DOCS = DOCS.filter(function(d){ return d.id !== id; });
+      renderDocs();
+      showToast('Đã bỏ tài liệu "' + (doc ? doc.name : '') + '"');
+    });
+
+    var docDrop = document.getElementById('abcDocDrop');
+    var docFileInput = document.getElementById('abcDocFileInput');
+    var IMG_EXT = ['jpg','jpeg','png','gif','webp'];
+    function handleNewDocFiles(fileList){
+      var added = [];
+      Array.prototype.forEach.call(fileList, function(file){
+        var ext = (file.name.split('.').pop() || '').toLowerCase();
+        var type = IMG_EXT.indexOf(ext) >= 0 ? 'img' : 'pdf';
+        DOCS.push({ id: 'd' + Date.now() + Math.random().toString(36).slice(2, 6), name: file.name, size: formatSize(file.size), type: type });
+        added.push(file.name);
+      });
+      if(added.length){
+        renderDocs();
+        showToast('Đã thêm ' + added.length + ' tài liệu: ' + added.join(', ') + ' — Nootee sẽ gộp vào lần tổng hợp tiếp theo');
+      }
+    }
+    docDrop.addEventListener('click', function(){ docFileInput.click(); });
+    docFileInput.addEventListener('change', function(){
+      handleNewDocFiles(docFileInput.files);
+      docFileInput.value = '';
+    });
+    docDrop.addEventListener('dragover', function(e){ e.preventDefault(); docDrop.classList.add('drag'); });
+    docDrop.addEventListener('dragleave', function(){ docDrop.classList.remove('drag'); });
+    docDrop.addEventListener('drop', function(e){
+      e.preventDefault();
+      docDrop.classList.remove('drag');
+      if(e.dataTransfer && e.dataTransfer.files) handleNewDocFiles(e.dataTransfer.files);
+    });
+
+    // ---- Xem lớn 1 ảnh/ghi chú thô + sửa/xoá trực tiếp trên thẻ ----
+    var previewModal = document.getElementById('abcPreviewModal');
+    var previewInner = document.getElementById('abcPreviewInner');
+    function openPreview(f){
+      var html;
+      if(THUMBS[f.id]){
+        html = '<div class="abc-preview-photo'+(f.blurry ? ' abc-thumb-blur' : '')+'">' + THUMBS[f.id] + '</div>' +
+          '<div class="abc-preview-body">' +
+            '<div class="abc-preview-title">'+f.title+'</div>' +
+            '<div class="abc-preview-meta mono">'+f.meta+'</div>' +
+            (f.blurry ? '<div style="margin-top:12px;"><span class="abc-pill abc-pill-warn">Ảnh mờ, thiếu góc</span></div>' : '') +
+          '</div>';
+      } else {
+        html = '<div class="abc-preview-body" style="padding-top:28px;">' +
+            '<div class="abc-frag-icon" style="width:40px;height:40px;color:var(--muted);background:var(--surface-hover);margin-bottom:14px;">'+ICONS[f.icon]+'</div>' +
+            '<div class="abc-preview-title" style="font-size:1.05rem;">'+f.title+'</div>' +
+            '<div class="abc-preview-meta mono">'+f.meta+'</div>' +
+          '</div>';
+      }
+      previewInner.innerHTML = html;
+      previewModal.classList.add('open');
+    }
+    function closePreview(){ previewModal.classList.remove('open'); }
+    document.getElementById('abcFragRaw').addEventListener('click', function(e){
+      var editBtn = e.target.closest('[data-manage-edit]');
+      var delBtn = e.target.closest('[data-manage-del]');
+      if(editBtn){
+        e.stopPropagation();
+        var card = editBtn.closest('.abc-frag');
+        var titleEl = card.querySelector('.abc-frag-title');
+        var editing = titleEl.getAttribute('contenteditable') === 'true';
+        if(editing){
+          titleEl.setAttribute('contenteditable', 'false');
+          var f2 = FRAGMENTS.find(function(x){ return x.id === editBtn.getAttribute('data-manage-edit'); });
+          if(f2) f2.title = titleEl.textContent.trim() || f2.title;
+          showToast('Đã lưu chỉnh sửa nội dung');
+        } else {
+          titleEl.setAttribute('contenteditable', 'true');
+          titleEl.focus();
+          showToast('Đang sửa — bấm ra ngoài hoặc bấm nút sửa lần nữa để lưu');
+        }
+        return;
+      }
+      if(delBtn){
+        e.stopPropagation();
+        var id = delBtn.getAttribute('data-manage-del');
+        var removed = FRAGMENTS.find(function(x){ return x.id === id; });
+        FRAGMENTS = FRAGMENTS.filter(function(x){ return x.id !== id; });
+        renderFragLists();
+        showToast('Đã xoá mục "' + (removed ? removed.title.slice(0, 36) : '') + (removed && removed.title.length > 36 ? '…' : '') + '"');
+        return;
+      }
+      var card2 = e.target.closest('.abc-frag');
+      if(!card2) return;
+      var f = FRAGMENTS.find(function(x){ return x.id === card2.getAttribute('data-frag'); });
+      if(f) openPreview(f);
+    });
+    document.getElementById('abcPreviewClose').addEventListener('click', closePreview);
+    previewModal.addEventListener('click', function(e){
+      if(e.target === previewModal) closePreview();
+    });
+    document.getElementById('abcFragCSource').addEventListener('click', function(e){
+      var card = e.target.closest('.abc-frag');
+      if(!card) return;
+      var f = FRAGMENTS.find(function(x){ return x.id === card.getAttribute('data-frag'); });
+      if(f) openPreview(f);
+    });
+
+    // ---- Option A: xử lý từng mục, chấp nhận / sửa / bỏ qua ----
+    document.getElementById('abcFragA').addEventListener('click', function(e){
+      var srcBtn = e.target.closest('[data-src-frag]');
+      if(srcBtn){
+        var srcF = FRAGMENTS.find(function(x){ return x.id === srcBtn.getAttribute('data-src-frag'); });
+        if(srcF) openPreview(srcF);
+        return;
+      }
+      var processBtn = e.target.closest('[data-process]');
+      if(processBtn){
+        var id = processBtn.getAttribute('data-process');
+        var out = document.getElementById('out-'+id);
+        var status = document.querySelector('[data-status="'+id+'"]');
+        if(out && !out.classList.contains('open')){
+          out.classList.add('open');
+          status.textContent = 'đã tóm tắt';
+          status.className = 'abc-pill abc-pill-ok';
+          processBtn.disabled = true;
+        }
+        return;
+      }
+      var actionBtn = e.target.closest('[data-action]');
+      if(!actionBtn) return;
+      var action = actionBtn.getAttribute('data-action');
+      var outBox = actionBtn.closest('.abc-out');
+      var fragId = outBox.id.replace('out-', '');
+      var frag = FRAGMENTS.find(function(x){ return x.id === fragId; });
+      var pill = document.querySelector('[data-status="'+fragId+'"]');
+      var textEl = outBox.querySelector('.abc-out-text');
+      var actionRow = outBox.querySelector('[data-out-actions]');
+      if(action === 'accept'){
+        frag.abcStatus = 'accepted';
+        pill.textContent = 'đã chấp nhận';
+        pill.className = 'abc-pill abc-pill-ok';
+        actionRow.querySelectorAll('.abc-btn').forEach(function(b){ b.disabled = true; });
+        processedCount++;
+        updateCounterA();
+        showToast('Đã chấp nhận mục này vào ghi chú');
+      } else if(action === 'edit'){
+        var editing = textEl.getAttribute('contenteditable') === 'true';
+        if(editing){
+          textEl.setAttribute('contenteditable', 'false');
+          actionBtn.textContent = 'Sửa';
+          frag.aiOut = textEl.textContent.trim() || frag.aiOut;
+          frag.abcStatus = 'edited';
+          pill.textContent = 'đã sửa';
+          pill.className = 'abc-pill abc-pill-ok';
+          actionRow.querySelectorAll('.abc-btn').forEach(function(b){ b.disabled = true; });
+          processedCount++;
+          updateCounterA();
+          showToast('Đã lưu chỉnh sửa');
+        } else {
+          textEl.setAttribute('contenteditable', 'true');
+          textEl.focus();
+          actionBtn.textContent = 'Xong';
+          showToast('Đang sửa nội dung mục này — bấm "Xong" để lưu');
+        }
+      } else if(action === 'skip'){
+        frag.abcStatus = 'skipped';
+        pill.textContent = 'đã bỏ qua';
+        pill.className = 'abc-pill abc-pill-muted';
+        actionRow.querySelectorAll('.abc-btn').forEach(function(b){ b.disabled = true; });
+        processedCount++;
+        updateCounterA();
+        showToast('Đã bỏ qua mục này');
+      }
+    });
+
+    function buildFinalLessonHTML(){
+      var included = FRAGMENTS.filter(function(f){ return f.abcStatus === 'accepted' || f.abcStatus === 'edited'; });
+      var skipped = FRAGMENTS.filter(function(f){ return f.abcStatus === 'skipped'; }).length;
+      var pending = FRAGMENTS.filter(function(f){ return !f.abcStatus; }).length;
+      var html = AI_BADGE_HTML;
+      if(included.length === 0){
+        return html + '<h2>Chưa có mục nào được chấp nhận</h2>' +
+          '<p>Bạn mới bỏ qua hoặc chưa xử lý hết các mục. Quay lại và bấm <strong>Chấp nhận</strong> (hoặc Sửa rồi lưu) ít nhất 1 mục để Nootee tổng hợp thành ghi chú.</p>';
+      }
+      html += '<h2>Bài 1: Cung, Cầu và Cân bằng thị trường</h2>';
+      html += '<p class="mono" style="font-size:11.5px; color:var(--muted-on-paper); margin:-8px 0 20px;">Tổng hợp từ ' + included.length + '/' + FRAGMENTS.length + ' mục bạn chấp nhận' +
+        (skipped ? ' · bỏ qua ' + skipped + ' mục' : '') + (pending ? ' · ' + pending + ' mục chưa xử lý' : '') + '</p>';
+      included.forEach(function(f){
+        if(f.id === 'f2'){
+          html += '<div class="formula-box"><div class="label">Công thức cốt lõi</div><div class="formula">' + f.aiOut + '</div></div>';
+        } else {
+          html += '<p>' + f.aiOut + '</p>';
+        }
+      });
+      var hasDiagram = included.some(function(f){ return f.id === 'f1' || f.id === 'f3'; });
+      if(hasDiagram){
+        html += DIAGRAM_HTML;
+      }
+      return html;
+    }
+
+    document.getElementById('aFinish').addEventListener('click', function(){
+      showSynth('Nootee đang tạo và tổng hợp ghi chú cho bạn...', 'Dựa trên các mục bạn đã xử lý ở phương án A', function(){
+        document.getElementById('abcALessonSlot').innerHTML = buildFinalLessonHTML();
+        document.getElementById('abcAList').classList.remove('active');
+        document.getElementById('abcAFinal').classList.add('active');
+      }, 1800);
+    });
+    document.getElementById('aBackToEdit').addEventListener('click', function(){
+      document.getElementById('abcAFinal').classList.remove('active');
+      document.getElementById('abcAList').classList.add('active');
+    });
+
+    // ---- Option B: sửa + lưu ----
+    document.querySelectorAll('#abcPanelB [data-edit-target]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var target = btn.getAttribute('data-edit-target');
+        var el = document.querySelector('[data-cap="'+target+'"]');
+        var editing = el.getAttribute('contenteditable') === 'true';
+        el.setAttribute('contenteditable', editing ? 'false' : 'true');
+        btn.textContent = editing ? 'Sửa đoạn này' : 'Xong';
+        if(editing){
+          var tag = document.querySelector('[data-edited-for="'+target+'"]');
+          if(tag) tag.classList.add('show');
+        } else {
+          el.focus();
+        }
+      });
+    });
+    document.getElementById('bSave').addEventListener('click', function(){
+      // chốt lại nội dung đang sửa dở (nếu còn đang bật contenteditable) trước khi ráp bài học
+      document.querySelectorAll('#abcPanelB .caption[contenteditable="true"]').forEach(function(el){ el.setAttribute('contenteditable', 'false'); });
+      var lessonHtml = buildFinalLessonHTMLB();
+      showSynth('Nootee đang lưu và định dạng lại ghi chú...', 'Kinh tế vi mô · theo bản bạn vừa xác nhận', function(){
+        document.getElementById('abcBLessonSlot').innerHTML = lessonHtml;
+        document.getElementById('abcBCompose').classList.remove('active');
+        document.getElementById('abcBSaved').classList.add('active');
+      }, 1400);
+    });
+    document.getElementById('bDiscard').addEventListener('click', function(){
+      showToast('Đã bỏ đề xuất của phương án B');
+      activatePanel('raw');
+    });
+    document.getElementById('bBackToEdit').addEventListener('click', function(){
+      document.getElementById('abcBSaved').classList.remove('active');
+      document.getElementById('abcBCompose').classList.add('active');
+    });
+
+    // ---- Option C: sửa / xem gốc / khôi phục ----
+    document.getElementById('cEdit').addEventListener('click', function(){
+      ['c1','c2','c3'].forEach(function(id){
+        var el = document.querySelector('[data-cap="'+id+'"]');
+        var editing = el.getAttribute('contenteditable') === 'true';
+        el.setAttribute('contenteditable', editing ? 'false' : 'true');
+      });
+      this.textContent = this.textContent === 'Sửa' ? 'Xong' : 'Sửa';
+    });
+    document.getElementById('cShowRaw').addEventListener('click', function(){
+      var box = document.getElementById('abcRawThumbs');
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    });
+    document.getElementById('cRevert').addEventListener('click', function(){
+      document.getElementById('abcCAuto').classList.remove('active');
+      document.getElementById('abcCReverted').classList.add('active');
+    });
+    document.getElementById('cRerun').addEventListener('click', function(){
+      document.getElementById('abcCReverted').classList.remove('active');
+      showSynth('Nootee đang tự động tổng hợp lại...', 'Kinh tế vi mô', function(){
+        document.getElementById('abcCAuto').classList.add('active');
+      }, 1400);
+    });
+
+    // ---- Toggle A/B/C/Thô ----
+    var HEAD = {
+      raw: { h:'Ghi chú thô của bạn', p:'Đây là những gì bạn đã lưu trong lúc học. Bấm A / B / C ở góc dưới phải để xem AI Notes có thể tổng hợp phần này theo 3 cách khác nhau — và chọn ra cách hợp nhất.' },
+      a:   { h:'A · Bạn chọn mục nào, AI xử lý mục đó', p:'Không có gì được tự động tóm tắt. Chọn từng mục và bấm xử lý nếu bạn muốn AI gộp lại.' },
+      b:   { h:'B · AI đã gom nhóm — bạn xem lại trước khi lưu', p:'Chưa có gì được lưu. Sửa trực tiếp phần nào chưa đúng, rồi bấm "Xem lại & Lưu".' },
+      c:   { h:'C · AI tự động tổng hợp toàn bộ', p:'Bản ghi đã được tạo và lưu sẵn, không cần bạn làm gì. Bạn vẫn có thể sửa, xem ảnh gốc, hoặc khôi phục lại ghi chú thô.' }
+    };
+    var panels = { raw:'abcPanelRaw', a:'abcPanelA', b:'abcPanelB', c:'abcPanelC' };
+    var toggleBtns = document.querySelectorAll('.abc-toggle-btn');
+    function activatePanel(key){
+      toggleBtns.forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-panel') === key); });
+      Object.keys(panels).forEach(function(k){
+        document.getElementById(panels[k]).classList.toggle('active', k === key);
+      });
+      document.getElementById('abcHeading').textContent = HEAD[key].h;
+      document.getElementById('abcDesc').textContent = HEAD[key].p;
+    }
+    toggleBtns.forEach(function(b){
+      b.addEventListener('click', function(){ activatePanel(b.getAttribute('data-panel')); });
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<title>AI Notes — Ba phương án</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#E8EDE8;
+    --surface:#FFFFFF;
+    --surface-2:#F2F4F0;
+    --ink:#1A2130;
+    --muted:#5B6472;
+    --border: rgba(26,33,48,0.14);
+    --accent:#3A4FA0;
+    --accent-ink:#FFFFFF;
+    --highlight:#C6871A;
+    --highlight-bg:#FBF0DA;
+    --warn:#AE4A15;
+    --warn-bg:#FBEADD;
+    --ok:#2F6B3D;
+    --ok-bg:#E5F0E4;
+    --shadow: 0 1px 2px rgba(20,24,34,.06), 0 10px 28px -14px rgba(20,24,34,.28);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14171F;
+      --surface:#1C212C;
+      --surface-2:#222839;
+      --ink:#E7E9EE;
+      --muted:#9AA3B2;
+      --border: rgba(231,233,238,0.16);
+      --accent:#8C97E8;
+      --accent-ink:#12162A;
+      --highlight:#E0AC3B;
+      --highlight-bg:#332708;
+      --warn:#E2793D;
+      --warn-bg:#3A2414;
+      --ok:#6FBF7E;
+      --ok-bg:#1B2F1F;
+      --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 28px -14px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14171F;
+    --surface:#1C212C;
+    --surface-2:#222839;
+    --ink:#E7E9EE;
+    --muted:#9AA3B2;
+    --border: rgba(231,233,238,0.16);
+    --accent:#8C97E8;
+    --accent-ink:#12162A;
+    --highlight:#E0AC3B;
+    --highlight-bg:#332708;
+    --warn:#E2793D;
+    --warn-bg:#3A2414;
+    --ok:#6FBF7E;
+    --ok-bg:#1B2F1F;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 28px -14px rgba(0,0,0,.7);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .mono{ font-family:"IBM Plex Mono", ui-monospace, monospace; }
+  h1,h2,h3{ font-family:"Newsreader", Georgia, serif; text-wrap:balance; margin:0; }
+
+  .app{
+    max-width:760px;
+    margin:0 auto;
+    padding:20px 16px 96px;
+  }
+
+  /* ---- top bar ---- */
+  .topbar{
+    position:sticky; top:0; z-index:20;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background:var(--bg);
+    padding:10px 0 14px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:18px;
+  }
+  .brand{
+    font-family:"Newsreader", serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:1.2rem;
+    color:var(--accent);
+    margin-right:4px;
+    white-space:nowrap;
+  }
+  .tabs{ display:flex; gap:6px; flex-wrap:wrap; }
+  .tab{
+    font:inherit; font-size:.86rem; font-weight:500;
+    padding:7px 13px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--muted);
+    cursor:pointer;
+  }
+  .tab:hover{ color:var(--ink); }
+  .tab.active{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+  .tab:focus-visible, button:focus-visible, [contenteditable]:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+  .ctx-btn{
+    margin-left:auto;
+    font:inherit; font-size:.82rem; font-weight:500;
+    padding:7px 12px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--muted);
+    cursor:pointer;
+  }
+  .ctx-btn:hover{ color:var(--ink); }
+
+  /* ---- screens ---- */
+  .screen{ display:none; }
+  .screen.active{ display:block; animation:fade .18s ease; }
+  @media (prefers-reduced-motion: reduce){ .screen.active{ animation:none; } }
+  @keyframes fade{ from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:none;} }
+
+  .screen-head{ margin-bottom:16px; }
+  .screen-head .kicker{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:6px; display:block;
+  }
+  .screen-head h2{ font-size:1.4rem; font-weight:600; }
+  .screen-head p{ color:var(--muted); margin:.4rem 0 0; max-width:56ch; }
+
+  .counter{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:"IBM Plex Mono", monospace; font-size:.78rem;
+    color:var(--muted); background:var(--surface-2);
+    border:1px solid var(--border); border-radius:999px;
+    padding:4px 10px; margin-top:10px;
+  }
+
+  /* ---- fragment cards ---- */
+  .frag-list{ display:flex; flex-direction:column; gap:10px; }
+  .frag{
+    display:flex; gap:12px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    box-shadow:var(--shadow);
+  }
+  .frag-icon{
+    flex:none; width:34px; height:34px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--surface-2); color:var(--muted);
+  }
+  .frag-icon svg{ width:18px; height:18px; }
+  .frag-body{ flex:1; min-width:0; }
+  .frag-title{ font-weight:500; }
+  .frag-meta{ color:var(--muted); font-size:.86rem; margin-top:2px; }
+  .pill{
+    display:inline-flex; align-items:center; gap:4px;
+    font-family:"IBM Plex Mono", monospace; font-size:.7rem;
+    padding:2px 8px; border-radius:999px; font-weight:500;
+    margin-top:6px;
+  }
+  .pill-warn{ background:var(--warn-bg); color:var(--warn); }
+  .pill-ok{ background:var(--ok-bg); color:var(--ok); }
+  .pill-muted{ background:var(--surface-2); color:var(--muted); }
+  .pill-highlight{ background:var(--highlight-bg); color:var(--highlight); }
+
+  .frag-actions{ margin-top:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .btn{
+    font:inherit; font-size:.84rem; font-weight:500;
+    padding:7px 12px; border-radius:8px; cursor:pointer;
+    border:1px solid var(--border); background:var(--surface);
+    color:var(--ink);
+  }
+  .btn:hover{ border-color:var(--accent); }
+  .btn-primary{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+  .btn-primary:hover{ opacity:.92; }
+  .btn-quiet{ border-color:transparent; background:none; color:var(--accent); padding:7px 4px; }
+  .btn-quiet:hover{ text-decoration:underline; }
+  .btn[disabled]{ opacity:.5; cursor:default; }
+
+  .ai-out{
+    margin-top:10px; padding:10px 12px;
+    background:var(--surface-2); border-radius:8px;
+    border:1px dashed var(--border);
+    display:none;
+  }
+  .ai-out.open{ display:block; }
+  .ai-out .src{ margin-top:6px; color:var(--muted); font-size:.8rem; }
+  .ai-out .src b{ color:var(--ink); font-weight:500; }
+
+  /* ---- option B/C composed note ---- */
+  .note-card{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:16px; box-shadow:var(--shadow);
+    margin-bottom:12px;
+  }
+  .note-card h3{ font-size:1.02rem; font-weight:600; margin-bottom:8px; }
+  .caption{
+    color:var(--ink); border-radius:6px; padding:4px 6px; margin:-4px -6px 6px;
+  }
+  .caption[contenteditable="true"]{ background:var(--surface-2); }
+  .caption-row{ display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; }
+  .caption-row:last-child{ margin-bottom:0; }
+  .caption-edit{
+    background:none; border:none; color:var(--accent); font:inherit; font-size:.78rem;
+    cursor:pointer; padding:4px 0; white-space:nowrap;
+  }
+  .edited-tag{ display:none; }
+  .edited-tag.show{ display:inline-flex; }
+
+  .sticky-actions{
+    position:sticky; bottom:0; display:flex; gap:10px; justify-content:flex-end;
+    padding:12px 0 2px; background:linear-gradient(var(--bg) 40%, var(--bg));
+  }
+
+  .banner{
+    display:flex; gap:10px; align-items:flex-start;
+    background:var(--surface-2); border:1px solid var(--border);
+    border-radius:10px; padding:12px 14px; margin-bottom:14px;
+  }
+  .banner .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); margin-top:6px; flex:none; }
+  .banner strong{ display:block; }
+  .banner span.mono{ color:var(--muted); font-size:.78rem; }
+
+  .subview{ display:none; }
+  .subview.active{ display:block; }
+
+  .raw-thumbs{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .raw-thumb{
+    width:76px; height:56px; border-radius:6px; background:var(--surface-2);
+    border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:.65rem; text-align:center; padding:4px;
+  }
+
+  /* ---- facilitator panel ---- */
+  .fac-toggle{
+    position:fixed; right:14px; bottom:14px; z-index:30;
+    font:inherit; font-size:.78rem; font-weight:500;
+    padding:9px 14px; border-radius:999px; cursor:pointer;
+    background:var(--surface); color:var(--muted);
+    border:1px dashed var(--border); box-shadow:var(--shadow);
+  }
+  .fac-panel{
+    position:fixed; right:14px; bottom:60px; z-index:30;
+    width:min(320px, calc(100vw - 28px));
+    background:var(--surface); border:1px dashed var(--border);
+    border-radius:12px; padding:14px; box-shadow:var(--shadow);
+  }
+  .fac-panel[hidden]{ display:none; }
+  .fac-panel .fac-label{
+    font-family:"IBM Plex Mono", monospace; font-size:.7rem; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--warn); margin-bottom:8px; display:block;
+  }
+  .fac-panel dt{ font-weight:600; font-size:.8rem; margin-top:8px; }
+  .fac-panel dt:first-of-type{ margin-top:0; }
+  .fac-panel dd{ margin:2px 0 0; color:var(--muted); font-size:.84rem; }
+
+  @media (max-width: 480px){
+    .topbar{ gap:8px; }
+    .ctx-btn{ margin-left:0; order:3; width:100%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">AI Notes</div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="context">Ghi chú thô</button>
+      <button class="tab" data-tab="a">A · Tự chọn</button>
+      <button class="tab" data-tab="b">B · Cùng làm</button>
+      <button class="tab" data-tab="c">C · Tự động</button>
+    </nav>
+    <button class="ctx-btn" id="toContext">↺ Common context</button>
+  </header>
+
+  <!-- ============ CONTEXT (common) ============ -->
+  <section class="screen active" id="screen-context">
+    <div class="screen-head">
+      <span class="kicker">Buổi học · Kinh tế vi mô</span>
+      <h2>Ghi chú thô của bạn</h2>
+      <p>Đây là những gì bạn đã lưu trong lúc học. Chọn một phương án ở trên để xem AI Notes xử lý phần này như thế nào.</p>
+    </div>
+    <div class="frag-list" id="fragList"></div>
+  </section>
+
+  <!-- ============ OPTION A — User-led ============ -->
+  <section class="screen" id="screen-a">
+    <div class="screen-head">
+      <span class="kicker">Phương án A</span>
+      <h2>Bạn chọn mục nào, AI xử lý mục đó</h2>
+      <p>Không có gì được tự động tóm tắt. Chọn từng mục và bấm xử lý nếu bạn muốn AI gộp lại.</p>
+      <span class="counter" id="aCounter">0 / 6 mục đã xử lý</span>
+    </div>
+    <div class="frag-list" id="fragListA"></div>
+  </section>
+
+  <!-- ============ OPTION B — Co-create ============ -->
+  <section class="screen" id="screen-b">
+    <div class="subview active" id="bCompose">
+      <div class="screen-head">
+        <span class="kicker">Phương án B</span>
+        <h2>AI đã gom nhóm — bạn xem lại trước khi lưu</h2>
+        <p>Chưa có gì được lưu. Sửa trực tiếp phần nào chưa đúng, rồi bấm Lưu ở dưới.</p>
+      </div>
+
+      <div class="note-card">
+        <h3>Cung – Cầu &amp; Giá cân bằng</h3>
+        <div class="caption-row">
+          <div class="caption" contenteditable="false" data-cap="b1">Đường cung dốc lên, đường cầu dốc xuống; điểm hai đường cắt nhau là mức giá cân bằng (ví dụ: giá xăng dầu thầy cho đầu giờ).</div>
+        </div>
+        <button class="caption-edit" data-edit-target="b1">Sửa đoạn này</button>
+        <span class="pill pill-ok edited-tag" data-edited-for="b1">đã sửa</span>
+      </div>
+
+      <div class="note-card">
+        <h3>Độ co giãn &amp; Thặng dư</h3>
+        <div class="caption-row">
+          <div class="caption" contenteditable="false" data-cap="b2">Độ co giãn cầu theo giá = %Δ lượng cầu / %Δ giá.</div>
+        </div>
+        <button class="caption-edit" data-edit-target="b2">Sửa đoạn này</button>
+        <span class="pill pill-ok edited-tag" data-edited-for="b2">đã sửa</span>
+
+        <div class="caption-row" style="margin-top:10px;">
+          <div class="caption" contenteditable="false" data-cap="b3">Thặng dư tiêu dùng và thặng dư sản xuất là phần diện tích quanh mức giá cân bằng, tương ứng phía đường cầu và đường cung.</div>
+        </div>
+        <span class="pill pill-warn">Ảnh mờ — AI đoán, vui lòng kiểm tra</span><br/>
+        <button class="caption-edit" data-edit-target="b3">Sửa đoạn này</button>
+        <span class="pill pill-ok edited-tag" data-edited-for="b3">đã sửa</span>
+      </div>
+
+      <div class="sticky-actions">
+        <button class="btn" id="bDiscard">Bỏ đề xuất này</button>
+        <button class="btn btn-primary" id="bSave">Xem lại &amp; Lưu</button>
+      </div>
+    </div>
+
+    <div class="subview" id="bSaved">
+      <div class="banner">
+        <div class="dot" style="background:var(--ok);"></div>
+        <div>
+          <strong>Đã lưu vào ghi chú của bạn</strong>
+          <span class="mono">Kinh tế vi mô · vừa xong · đã qua bước bạn xác nhận</span>
+        </div>
+      </div>
+      <button class="btn btn-quiet" id="bBackToEdit">← Quay lại chỉnh sửa</button>
+    </div>
+  </section>
+
+  <!-- ============ OPTION C — AI-led ============ -->
+  <section class="screen" id="screen-c">
+    <div class="subview active" id="cAuto">
+      <div class="banner">
+        <div class="dot"></div>
+        <div>
+          <strong>AI đã tự động tổng hợp ghi chú của buổi học này</strong>
+          <span class="mono">Tự động · chưa được bạn xem lại</span>
+        </div>
+      </div>
+
+      <div class="note-card">
+        <h3>Cung – Cầu &amp; Giá cân bằng</h3>
+        <div class="caption-row">
+          <div class="caption" contenteditable="false" data-cap="c1">Đường cung dốc lên, đường cầu dốc xuống; điểm hai đường cắt nhau là mức giá cân bằng (ví dụ: giá xăng dầu thầy cho đầu giờ).</div>
+        </div>
+      </div>
+      <div class="note-card">
+        <h3>Độ co giãn &amp; Thặng dư</h3>
+        <div class="caption-row">
+          <div class="caption" contenteditable="false" data-cap="c2">Độ co giãn cầu theo giá = %Δ lượng cầu / %Δ giá.</div>
+        </div>
+        <div class="caption-row" style="margin-top:10px;">
+          <div class="caption" contenteditable="false" data-cap="c3">Thặng dư tiêu dùng và thặng dư sản xuất là phần diện tích quanh mức giá cân bằng, tương ứng phía đường cầu và đường cung.</div>
+        </div>
+        <span class="pill pill-warn">AI tự tin thấp trên đoạn này</span>
+      </div>
+
+      <div class="frag-actions" style="margin-top:4px;">
+        <button class="btn" data-edit-target="c1,c2,c3" id="cEdit">Sửa</button>
+        <button class="btn" id="cShowRaw">Xem ảnh gốc</button>
+        <button class="btn btn-quiet" id="cRevert">Khôi phục bản ghi thô ban đầu</button>
+      </div>
+
+      <div id="cRawThumbs" style="display:none;">
+        <p class="mono" style="color:var(--muted); font-size:.8rem; margin:12px 0 4px;">3 ảnh + 2 note gốc mà AI đã dùng:</p>
+        <div class="raw-thumbs">
+          <div class="raw-thumb">Slide 4 · Cung–cầu</div>
+          <div class="raw-thumb">Slide 7 · Công thức</div>
+          <div class="raw-thumb">Slide 9 · Mờ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subview" id="cReverted">
+      <div class="screen-head">
+        <span class="kicker">Đã khôi phục</span>
+        <h2>Quay về ghi chú thô ban đầu</h2>
+        <p>Bản tổng hợp tự động đã được gỡ. Đây lại là các mảnh ghi chú gốc.</p>
+      </div>
+      <div class="frag-list" id="fragListC"></div>
+      <div class="sticky-actions" style="justify-content:flex-start;">
+        <button class="btn btn-primary" id="cRerun">Chạy lại tự động tổng hợp</button>
+      </div>
+    </div>
+  </section>
+
+  <button class="fac-toggle" id="facToggle">Ghi chú facilitator</button>
+  <aside class="fac-panel" id="facPanel" hidden>
+    <span class="fac-label">Chỉ facilitator — ẩn khi test</span>
+    <dl id="facBody"></dl>
+  </aside>
+
+</div>
+
+<script>
+(function(){
+  var ICONS = {
+    photo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5.5-5.5L9 17"/></svg>',
+    note:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h14v16H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
+    flag:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3v18"/><path d="M6 4h11l-2.5 4L17 12H6"/></svg>'
+  };
+
+  var FRAGMENTS = [
+    { id:'f1', icon:'photo', title:'Slide 4 · Đường cung – đường cầu', meta:'Ảnh chụp · rõ nét',
+      aiOut:'Đường cung dốc lên, đường cầu dốc xuống; điểm hai đường cắt nhau là mức giá cân bằng.',
+      src:'Ảnh Slide 4 + ghi chú "giá cân bằng..." kế bên' },
+    { id:'f2', icon:'photo', title:'Slide 7 · Công thức độ co giãn', meta:'Ảnh chụp · rõ nét',
+      aiOut:'Độ co giãn cầu theo giá đo mức % lượng cầu thay đổi khi giá thay đổi 1%.',
+      src:'Ảnh Slide 7 + ghi chú công thức bên cạnh' },
+    { id:'f3', icon:'photo', title:'Slide 9 · Đồ thị thặng dư', meta:'Ảnh chụp', blurry:true,
+      aiOut:'Thặng dư tiêu dùng là phần diện tích giữa đường cầu và mức giá thị trường.',
+      src:'Ảnh Slide 9 — ảnh mờ, thiếu góc: AI đoán một phần nội dung' },
+    { id:'f4', icon:'note', title:'"Giá cân bằng là điểm cắt giữa 2 đường..."', meta:'Note gõ tay · "...thầy cho VD giá xăng dầu đầu giờ"',
+      aiOut:'Ghi nhớ: giá cân bằng = điểm cắt cung–cầu, ví dụ thực tế là giá xăng dầu.',
+      src:'Note gõ tay của bạn' },
+    { id:'f5', icon:'note', title:'"Độ co giãn = %Δ lượng cầu / %Δ giá"', meta:'Note gõ tay · "...hỏi lại phần co giãn hoàn toàn"',
+      aiOut:'Công thức độ co giãn đã ghi đúng; còn 1 câu hỏi mở: trường hợp co giãn hoàn toàn.',
+      src:'Note gõ tay của bạn' },
+    { id:'f6', icon:'flag', title:'Chưa hiểu: thặng dư sản xuất', meta:'Flag bạn đã đánh dấu trong buổi học',
+      aiOut:'Gợi ý ôn lại: thặng dư sản xuất là phần diện tích giữa đường cung và mức giá thị trường (đối xứng thặng dư tiêu dùng).',
+      src:'Flag "chưa hiểu" + nội dung Slide 9' }
+  ];
+
+  function fragCard(f, opts){
+    opts = opts || {};
+    var blurryPill = f.blurry ? '<span class="pill pill-warn">Ảnh mờ, thiếu góc</span>' : '';
+    var actions = '';
+    var out = '';
+    if(opts.interactive){
+      actions = '<div class="frag-actions">' +
+        '<button class="btn" data-process="'+f.id+'">Xử lý mục này</button>' +
+        '<span class="pill pill-muted" data-status="'+f.id+'">thô</span>' +
+        '</div>';
+      out = '<div class="ai-out" id="out-'+f.id+'">' + f.aiOut +
+            '<div class="src">Nguồn: <b>' + f.src + '</b></div>' +
+            '<div class="frag-actions" style="margin-top:8px;">' +
+              '<button class="btn btn-quiet">Chấp nhận</button>' +
+              '<button class="btn btn-quiet">Sửa</button>' +
+              '<button class="btn btn-quiet">Bỏ qua</button>' +
+            '</div></div>';
+    }
+    return '<div class="frag">' +
+      '<div class="frag-icon">'+ICONS[f.icon]+'</div>' +
+      '<div class="frag-body">' +
+        '<div class="frag-title">'+f.title+'</div>' +
+        '<div class="frag-meta">'+f.meta+'</div>' +
+        blurryPill +
+        actions + out +
+      '</div></div>';
+  }
+
+  document.getElementById('fragList').innerHTML = FRAGMENTS.map(function(f){ return fragCard(f, {interactive:false}); }).join('');
+  document.getElementById('fragListA').innerHTML = FRAGMENTS.map(function(f){ return fragCard(f, {interactive:true}); }).join('');
+  document.getElementById('fragListC').innerHTML = FRAGMENTS.map(function(f){ return fragCard(f, {interactive:false}); }).join('');
+
+  // ---- Option A: per-item processing ----
+  var processedCount = 0;
+  document.getElementById('fragListA').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-process]');
+    if(!btn) return;
+    var id = btn.getAttribute('data-process');
+    var out = document.getElementById('out-'+id);
+    var status = document.querySelector('[data-status="'+id+'"]');
+    if(out && !out.classList.contains('open')){
+      out.classList.add('open');
+      status.textContent = 'đã tóm tắt';
+      status.className = 'pill pill-ok';
+      btn.disabled = true;
+      processedCount++;
+      document.getElementById('aCounter').textContent = processedCount + ' / 6 mục đã xử lý';
+    }
+  });
+
+  // ---- Option B: edit + save ----
+  document.querySelectorAll('#screen-b .caption-edit').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var target = btn.getAttribute('data-edit-target');
+      var el = document.querySelector('[data-cap="'+target+'"]');
+      var editing = el.getAttribute('contenteditable') === 'true';
+      el.setAttribute('contenteditable', editing ? 'false' : 'true');
+      btn.textContent = editing ? 'Sửa đoạn này' : 'Xong';
+      if(editing){
+        var tag = document.querySelector('[data-edited-for="'+target+'"]');
+        if(tag) tag.classList.add('show');
+      } else {
+        el.focus();
+      }
+    });
+  });
+  document.getElementById('bSave').addEventListener('click', function(){
+    document.getElementById('bCompose').classList.remove('active');
+    document.getElementById('bSaved').classList.add('active');
+  });
+  document.getElementById('bDiscard').addEventListener('click', function(){
+    document.getElementById('bCompose').classList.remove('active');
+    document.getElementById('bSaved').classList.add('active');
+  });
+  document.getElementById('bBackToEdit').addEventListener('click', function(){
+    document.getElementById('bSaved').classList.remove('active');
+    document.getElementById('bCompose').classList.add('active');
+  });
+
+  // ---- Option C: edit / raw / revert ----
+  document.getElementById('cEdit').addEventListener('click', function(){
+    ['c1','c2','c3'].forEach(function(id){
+      var el = document.querySelector('[data-cap="'+id+'"]');
+      var editing = el.getAttribute('contenteditable') === 'true';
+      el.setAttribute('contenteditable', editing ? 'false' : 'true');
+    });
+    this.textContent = this.textContent === 'Sửa' ? 'Xong' : 'Sửa';
+  });
+  document.getElementById('cShowRaw').addEventListener('click', function(){
+    var box = document.getElementById('cRawThumbs');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  });
+  document.getElementById('cRevert').addEventListener('click', function(){
+    document.getElementById('cAuto').classList.remove('active');
+    document.getElementById('cReverted').classList.add('active');
+  });
+  document.getElementById('cRerun').addEventListener('click', function(){
+    document.getElementById('cReverted').classList.remove('active');
+    document.getElementById('cAuto').classList.add('active');
+  });
+
+  // ---- tabs ----
+  var tabs = document.querySelectorAll('.tab');
+  var screens = { context:'screen-context', a:'screen-a', b:'screen-b', c:'screen-c' };
+  function activate(key){
+    tabs.forEach(function(t){ t.classList.toggle('active', t.getAttribute('data-tab') === key); });
+    Object.keys(screens).forEach(function(k){
+      document.getElementById(screens[k]).classList.toggle('active', k === key);
+    });
+    updateFacilitator(key);
+  }
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){ activate(t.getAttribute('data-tab')); });
+  });
+  document.getElementById('toContext').addEventListener('click', function(){ activate('context'); });
+
+  // ---- facilitator notes ----
+  var FAC = {
+    context: { expect:'Tester đọc lướt qua các mảnh ghi chú thô trước khi chọn phương án.', watch:'Có nhận ra 1 ảnh bị mờ/thiếu góc không, trước khi bước vào các phương án.', avoid:'Không giải thích trước nội dung từng mảnh — để tester tự đọc.' },
+    a: { expect:'Chọn 1 mục và bấm nút xử lý riêng cho đúng mục đó.', watch:'Có thử xử lý nhiều mục cùng lúc không; có nhận ra các mục khác vẫn "thô" không.', avoid:'Không nói trước rằng phải xử lý từng mục một, để tự tester khám phá.' },
+    b: { expect:'Đọc outline AI đề xuất, sửa ít nhất 1 chỗ trước khi bấm Lưu.', watch:'Có đọc kỹ mục gắn cờ "AI đoán" không, hay bấm Lưu ngay không đọc.', avoid:'Không nói trước có mục nào bị AI đoán sai.' },
+    c: { expect:'Nhận ra bản ghi đã tự động xuất hiện dù mình chưa làm gì.', watch:'Có chủ động tìm nút Sửa / Xem ảnh gốc không, hay chấp nhận luôn kết quả AI.', avoid:'Không nói trước rằng có phần AI đoán sai/không chắc chắn.' }
+  };
+  function updateFacilitator(key){
+    var d = FAC[key];
+    document.getElementById('facBody').innerHTML =
+      '<dt>We expect the tester to</dt><dd>'+d.expect+'</dd>' +
+      '<dt>Watch for</dt><dd>'+d.watch+'</dd>' +
+      '<dt>Do not explain</dt><dd>'+d.avoid+'</dd>';
+  }
+  updateFacilitator('context');
+
+  var facPanel = document.getElementById('facPanel');
+  document.getElementById('facToggle').addEventListener('click', function(){
+    var hidden = facPanel.hasAttribute('hidden');
+    if(hidden){ facPanel.removeAttribute('hidden'); } else { facPanel.setAttribute('hidden',''); }
+  });
+})();
+</script>
+</body>
+</html>
