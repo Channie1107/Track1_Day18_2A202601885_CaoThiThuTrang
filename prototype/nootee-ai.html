@@ -1523,6 +1523,10 @@
     });
 
     function buildFinalLessonHTML(){
+      var byId = {};
+      FRAGMENTS.forEach(function(f){ byId[f.id] = f; });
+      var isIn = function(id){ return byId[id].abcStatus === 'accepted' || byId[id].abcStatus === 'edited'; };
+
       var included = FRAGMENTS.filter(function(f){ return f.abcStatus === 'accepted' || f.abcStatus === 'edited'; });
       var skipped = FRAGMENTS.filter(function(f){ return f.abcStatus === 'skipped'; }).length;
       var pending = FRAGMENTS.filter(function(f){ return !f.abcStatus; }).length;
@@ -1534,14 +1538,28 @@
       html += '<h2>Bài 1: Cung, Cầu và Cân bằng thị trường</h2>';
       html += '<p class="mono" style="font-size:11.5px; color:var(--muted-on-paper); margin:-8px 0 20px;">Tổng hợp từ ' + included.length + '/' + FRAGMENTS.length + ' mục bạn chấp nhận' +
         (skipped ? ' · bỏ qua ' + skipped + ' mục' : '') + (pending ? ' · ' + pending + ' mục chưa xử lý' : '') + '</p>';
-      included.forEach(function(f){
-        if(f.id === 'f2'){
-          html += '<div class="formula-box"><div class="label">Công thức cốt lõi</div><div class="formula">' + f.aiOut + '</div></div>';
-        } else {
-          html += '<p>' + f.aiOut + '</p>';
-        }
-      });
-      var hasDiagram = included.some(function(f){ return f.id === 'f1' || f.id === 'f3'; });
+
+      // Cung – Cầu & Giá cân bằng: gộp ảnh Slide 4 (f1) với note liền kề bạn ghi tay (f4), nếu cả 2 đều đã xử lý
+      if(isIn('f1') || isIn('f4')){
+        var eqText = isIn('f1') ? byId.f1.aiOut : 'Giá cân bằng là điểm cắt của đường cung và đường cầu.';
+        if(isIn('f4')){ eqText = eqText.replace(/\.$/, '') + ', ví dụ thực tế: giá xăng dầu (theo note bạn ghi tay lúc đó).'; }
+        html += '<p>' + eqText + '</p>';
+      }
+      // Độ co giãn: gộp ảnh Slide 7 (f2) với note liền kề (f5)
+      if(isIn('f2') || isIn('f5')){
+        var elText = isIn('f2') ? byId.f2.aiOut : 'Công thức độ co giãn: %Δ lượng cầu / %Δ giá.';
+        html += '<div class="formula-box"><div class="label">Công thức cốt lõi</div><div class="formula">' + elText + '</div></div>';
+        if(isIn('f5')){ html += '<p class="mono" style="font-size:.82rem; color:var(--muted-on-paper); margin-top:-10px;">Note bạn bổ sung: công thức đã ghi đúng, còn 1 câu hỏi mở — trường hợp co giãn hoàn toàn.</p>'; }
+      }
+      // Thặng dư: gộp ảnh mờ Slide 9 (f3) với flag "chưa hiểu" (f6)
+      if(isIn('f3') || isIn('f6')){
+        var suText = isIn('f3') ? byId.f3.aiOut : 'Thặng dư tiêu dùng là phần diện tích giữa đường cầu và mức giá thị trường.';
+        if(isIn('f6')){ suText = suText.replace(/\.$/, '') + '; đối xứng với đó, thặng dư sản xuất là phần diện tích giữa đường cung và mức giá thị trường (đã bổ sung từ flag "chưa hiểu" bạn đánh dấu).'; }
+        html += '<p>' + suText + '</p>';
+        if(isIn('f3') && byId.f3.blurry){ html += '<div style="margin:-8px 0 18px;"><span class="abc-pill abc-pill-warn">Ảnh mờ — AI đoán, vui lòng kiểm tra</span></div>'; }
+      }
+
+      var hasDiagram = isIn('f1') || isIn('f3');
       if(hasDiagram){
         html += DIAGRAM_HTML;
       }
